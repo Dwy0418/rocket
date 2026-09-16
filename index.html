@@ -860,11 +860,15 @@
     <input id="friendNameInput" placeholder="好友昵称" style="flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:6px;padding:5px 8px;color:#eaf2ff;font-size:12px;">
     <button id="addFriendBtn" style="background:rgba(60,120,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">添加</button>
   </div>
-  <div style="display:flex;gap:4px;margin-bottom:8px;">
-    <input id="teamNameInput" placeholder="组队名" style="flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:6px;padding:5px 8px;color:#eaf2ff;font-size:12px;">
-    <button id="joinTeamBtn" style="background:rgba(120,80,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">组队</button>
-    <button id="leaveTeamBtn" style="background:rgba(220,80,80,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">退队</button>
+  <div style="font-size:12px;color:#ffd0a0;margin:6px 0 4px;">🚩 组队（独立系统）</div>
+  <div style="display:flex;gap:4px;margin-bottom:4px;">
+    <input id="teamNameInput" placeholder="队名" style="flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:6px;padding:5px 8px;color:#eaf2ff;font-size:12px;">
+    <button id="createTeamBtn" style="background:rgba(120,80,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">创建</button>
+    <button id="searchTeamBtn" style="background:rgba(80,140,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">搜索</button>
   </div>
+  <div id="teamSearchResult" style="font-size:12px;color:#dce7ff;margin-bottom:4px;"></div>
+  <div id="teamInfo" style="font-size:12px;color:#dce7ff;margin-bottom:4px;"></div>
+  <button id="leaveTeamBtn" style="width:100%;background:rgba(220,80,80,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">退出队伍</button>
   <div id="friendList" style="max-height:220px;overflow-y:auto;font-size:12px;color:#dce7ff;"></div>
 </div>
 
@@ -7840,7 +7844,8 @@
     enabled: false, socket: null, id: null, name: '旅人', mode: 'single',
     players: new Map(), sendT: 0,
     friends: new Map(), team: '', teamMembers: new Map(), channel: 'world', followId: null, minimapBig: false,
-    chatHistory: { world: [], team: [], private: [] }, pendingRequests: [], privateWith: ''
+    chatHistory: { world: [], team: [], private: [] }, pendingRequests: [], privateWith: '',
+    teamLeaderName: '', teamRequests: []
   };
 
   function onlineName() {
@@ -7889,6 +7894,10 @@
       }
       else if (d.type === 'friendResult') showToast((d.ok ? '✅ ' : '⚠️ ') + (d.text || ''));
       else if (d.type === 'team') updateTeam(d);
+      else if (d.type === 'teamResult') showToast((d.ok ? '✅ ' : '⚠️ ') + (d.text || ''));
+      else if (d.type === 'teamSearch') renderTeamSearch(d);
+      else if (d.type === 'teamRequest') { showToast('🚩 ' + d.fromName + ' 申请加入队伍「' + d.teamName + '」'); Sound.beacon(); }
+      else if (d.type === 'nameTaken') { showToast('⚠️ 昵称「' + d.name + '」已被使用，请换一个'); ONLINE.enabled = false; }
       else if (d.type === 'friendOnline') showToast('🟢 好友 ' + d.name + ' 上线了');
       else if (d.type === 'friendOffline') showToast('⚫ 好友 ' + d.name + ' 下线了');
     };
@@ -8036,9 +8045,37 @@
   }
   function updateTeam(d) {
     ONLINE.team = d.team || '';
+    ONLINE.teamLeaderName = d.leaderName || '';
+    ONLINE.teamRequests = d.requests || [];
     ONLINE.teamMembers.clear();
     for (const m of d.members || []) if (m.id !== ONLINE.id) ONLINE.teamMembers.set(m.name, { id: m.id, name: m.name, color: m.color, x: m.x, y: m.y, z: m.z });
-    renderFriendList();
+    renderTeamInfo();
+  }
+  function renderTeamSearch(d) {
+    const el = document.getElementById('teamSearchResult');
+    if (!el) return;
+    if (!d.exists) { el.innerHTML = '<span style="color:#ff9a9a;">未找到队伍「' + d.name + '」</span>'; return; }
+    el.innerHTML = '<span>队伍「' + d.name + '」· ' + d.memberCount + '人 · 队长 ' + d.leaderName + '</span> ' +
+      '<button data-apply="' + d.name + '" style="background:none;border:none;color:#8fffb8;cursor:pointer;font-size:12px;">申请加入</button>';
+    const btn = el.querySelector('button[data-apply]');
+    if (btn) btn.addEventListener('click', () => sendOnline('team', { action: 'apply', name: btn.getAttribute('data-apply') }));
+  }
+  function renderTeamInfo() {
+    const el = document.getElementById('teamInfo');
+    if (!el) return;
+    if (!ONLINE.team) { el.innerHTML = ''; return; }
+    let html = '<div>🚩 队伍「' + ONLINE.team + '」' + (ONLINE.teamLeaderName ? ' · 队长 ' + ONLINE.teamLeaderName : '') + '</div>';
+    if (ONLINE.teamRequests && ONLINE.teamRequests.length) {
+      html += '<div style="color:#ffd060;">申请：</div>';
+      for (const r of ONLINE.teamRequests) {
+        html += '<div style="display:flex;justify-content:space-between;">' + r.name +
+          '<span><button data-approve="' + r.name + '" style="background:none;border:none;color:#8fffb8;cursor:pointer;font-size:12px;">通过</button>' +
+          '<button data-reject="' + r.name + '" style="background:none;border:none;color:#ff9a9a;cursor:pointer;font-size:12px;">拒绝</button></span></div>';
+      }
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('button[data-approve]').forEach(b => b.addEventListener('click', () => sendOnline('team', { action: 'approve', name: ONLINE.team, playerName: b.getAttribute('data-approve') })));
+    el.querySelectorAll('button[data-reject]').forEach(b => b.addEventListener('click', () => sendOnline('team', { action: 'reject', name: ONLINE.team, playerName: b.getAttribute('data-reject') })));
   }
   function updateFriendPos(d) {
     for (const [name, f] of ONLINE.friends) if (f.id === d.id) { f.x = d.x; f.y = d.y; f.z = d.z; f.online = true; }
@@ -9116,8 +9153,10 @@
   }
   const addFriendBtn = document.getElementById('addFriendBtn');
   if (addFriendBtn) addFriendBtn.addEventListener('click', () => { const i = document.getElementById('friendNameInput'); const n = i ? i.value.trim() : ''; if (n) { i.value = ''; sendOnline('friend', { action: 'add', name: n }); } });
-  const joinTeamBtn = document.getElementById('joinTeamBtn');
-  if (joinTeamBtn) joinTeamBtn.addEventListener('click', () => { const i = document.getElementById('teamNameInput'); const n = i ? i.value.trim() : ''; if (n) sendOnline('team', { action: 'join', name: n }); });
+  const createTeamBtn = document.getElementById('createTeamBtn');
+  if (createTeamBtn) createTeamBtn.addEventListener('click', () => { const i = document.getElementById('teamNameInput'); const n = i ? i.value.trim() : ''; if (n) sendOnline('team', { action: 'create', name: n }); });
+  const searchTeamBtn = document.getElementById('searchTeamBtn');
+  if (searchTeamBtn) searchTeamBtn.addEventListener('click', () => { const i = document.getElementById('teamNameInput'); const n = i ? i.value.trim() : ''; if (n) sendOnline('team', { action: 'search', name: n }); });
   const leaveTeamBtn = document.getElementById('leaveTeamBtn');
   if (leaveTeamBtn) leaveTeamBtn.addEventListener('click', () => sendOnline('team', { action: 'leave' }));
   const minimapEl = document.getElementById('minimap');

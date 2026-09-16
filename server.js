@@ -24,6 +24,7 @@ const server = http.createServer((req, res) => {
 // —— WebSocket 多人（世界/组队频道、好友、组队）——
 const wss = new WebSocket.Server({ server });
 const players = new Map(); // id -> player 对象
+const teams = new Map(); // 队名 -> { leader, members:Set, requests:Map<id,name> }
 
 function randomColor() { return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'); }
 function send(ws, msg) { try { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); } catch (e) {} }
@@ -42,8 +43,17 @@ function teamMembers(teamName) {
   return out;
 }
 function sendTeamUpdate(teamName) {
+  const t = teams.get(teamName);
+  if (!t) return;
   const members = teamMembers(teamName);
-  for (const [id, p] of players) if (p.team === teamName) send(p.ws, { type: 'team', team: teamName, members });
+  const leader = players.get(t.leader);
+  for (const [id, p] of players) {
+    if (t.members.has(id)) {
+      const reqs = [];
+      if (id === t.leader) for (const [rid, rname] of t.requests) reqs.push({ name: rname });
+      send(p.ws, { type: 'team', team: teamName, members, leaderName: leader ? leader.name : '', requests: reqs });
+    }
+  }
 }
 
 wss.on('connection', (ws) => {
@@ -58,7 +68,10 @@ wss.on('connection', (ws) => {
     if (!p) return;
 
     if (d.type === 'join') {
-      p.name = (d.name || '旅人').slice(0, 16);
+      const name = (d.name || '旅人').slice(0, 16);
+      const existing = byName(name);
+      if (existing && existing !== ws.id) { send(ws, { type: 'nameTaken', name }); return; }
+      p.name = name;
       p.seed = d.seed || '';
       p.color = d.color || p.color;
       p.x = d.x || 0; p.y = d.y || 0; p.z = d.z || 0;
@@ -97,15 +110,66 @@ wss.on('connection', (ws) => {
       }
     }
     else if (d.type === 'team') {
-      if (d.action === 'join') {
+      if (d.action === 'create') {
         const name = String(d.name || '').slice(0, 24);
         if (!name) return;
+        if (teams.has(name)) { send(ws, { type: 'teamResult', ok: false, text: '队名「' + name + '」已存在' }); return; }
+        if (p.team) { send(ws, { type: 'teamResult', ok: false, text: '你已经在队伍中' }); return; }
+        teams.set(name, { leader: ws.id, members: new Set([ws.id]), requests: new Map() });
         p.team = name;
         sendTeamUpdate(name);
-        send(ws, { type: 'chat', channel: 'team', name: '系统', text: '你已加入组队「' + name + '」' });
+        send(ws, { type: 'teamResult', ok: true, text: '队伍「' + name + '」已创建，你是队长' });
+      } else if (d.action === 'search') {
+        const name = String(d.name || '').slice(0, 24);
+        const t = teams.get(name);
+        if (!t) { send(ws, { type: 'teamSearch', name, exists: false }); return; }
+        const leader = players.get(t.leader);
+        send(ws, { type: 'teamSearch', name, exists: true, memberCount: t.members.size, leaderName: leader ? leader.name : '未知' });
+      } else if (d.action === 'apply') {
+        const name = String(d.name || '').slice(0, 24);
+        const t = teams.get(name);
+        if (!t) { send(ws, { type: 'teamResult', ok: false, text: '队伍不存在' }); return; }
+        if (p.team) { send(ws, { type: 'teamResult', ok: false, text: '你已经在队伍中' }); return; }
+        t.requests.set(ws.id, p.name);
+        const leader = players.get(t.leader);
+        if (leader) send(leader.ws, { type: 'teamRequest', teamName: name, fromName: p.name });
+        send(ws, { type: 'teamResult', ok: true, text: '申请已发送给队长' });
+      } else if (d.action === 'approve') {
+        const name = String(d.name || '');
+        const t = teams.get(name);
+        if (!t || t.leader !== ws.id) { send(ws, { type: 'teamResult', ok: false, text: '你不是该队队长' }); return; }
+        const pid = byName(String(d.playerName || ''));
+        if (!pid || !t.requests.has(pid)) { send(ws, { type: 'teamResult', ok: false, text: '申请不存在' }); return; }
+        t.requests.delete(pid);
+        t.members.add(pid);
+        const np = players.get(pid);
+        if (np) np.team = name;
+        sendTeamUpdate(name);
+        if (np) send(np.ws, { type: 'teamResult', ok: true, text: '你已加入队伍「' + name + '」' });
+      } else if (d.action === 'reject') {
+        const name = String(d.name || '');
+        const t = teams.get(name);
+        if (!t || t.leader !== ws.id) return;
+        const pid = byName(String(d.playerName || ''));
+        if (pid) t.requests.delete(pid);
+        sendTeamUpdate(name);
       } else if (d.action === 'leave') {
+        if (!p.team) return;
+        const name = p.team;
+        const t = teams.get(name);
+        if (t) {
+          t.members.delete(ws.id);
+          if (t.leader === ws.id) {
+            for (const mid of t.members) {
+              const mp = players.get(mid);
+              if (mp) { mp.team = ''; send(mp.ws, { type: 'team', team: '', members: [] }); }
+            }
+            teams.delete(name);
+          }
+        }
         p.team = '';
         send(ws, { type: 'team', team: '', members: [] });
+        if (t && t.leader !== ws.id) sendTeamUpdate(name);
       }
     }
     else if (d.type === 'friend') {
