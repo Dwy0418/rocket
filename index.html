@@ -840,6 +840,9 @@
 </div>
 
 <!-- 联机 UI：聊天、好友/组队、小地图 -->
+<button id="chatToggleBtn" style="position:fixed;right:14px;bottom:14px;width:48px;height:48px;border-radius:50%;z-index:21;display:none;background:rgba(40,70,140,.85);border:1px solid rgba(140,180,255,.5);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 0 14px rgba(80,140,255,.4);">💬</button>
+<button id="friendToggleBtn" style="position:fixed;right:14px;bottom:70px;width:48px;height:48px;border-radius:50%;z-index:21;display:none;background:rgba(70,50,130,.85);border:1px solid rgba(160,140,255,.5);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 0 14px rgba(140,110,255,.4);">👥</button>
+
 <div id="chatPanel" style="position:fixed;left:12px;bottom:12px;width:320px;z-index:20;font-family:'Segoe UI',sans-serif;display:none;">
   <div style="display:flex;gap:4px;margin-bottom:4px;">
     <button id="chatTabWorld" style="flex:1;padding:5px;border-radius:6px 6px 0 0;border:1px solid rgba(140,180,255,.4);background:rgba(40,70,140,.6);color:#eaf2ff;cursor:pointer;font-size:13px;">🌍 世界</button>
@@ -3156,6 +3159,50 @@
     ecoGroup.add(type.ecoMaker(radius));
     const group = new THREE.Group();
     group.add(sphere); group.add(atmo); group.add(ecoGroup);
+    /* 随机自然星环 / 小行星带（无文明星球也可能拥有） */
+    let ringRef = null, beltRef = null;
+    if (srand() < 0.22) {
+      const ringGroup = new THREE.Group();
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 1.6, radius * 0.07, 8, 72),
+        new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.8, metalness: 0.15, transparent: true, opacity: 0.65 })
+      );
+      ringGroup.add(ring);
+      /* 星环粒子尘埃 */
+      const dustCount = Math.floor(120 + srand() * 120);
+      const dpos = new Float32Array(dustCount * 3);
+      for (let i = 0; i < dustCount; i++) {
+        const a = srand() * Math.PI * 2;
+        const r = radius * (1.42 + srand() * 0.46);
+        dpos[i * 3] = Math.cos(a) * r;
+        dpos[i * 3 + 1] = (srand() - 0.5) * radius * 0.06;
+        dpos[i * 3 + 2] = Math.sin(a) * r;
+      }
+      const dustGeo = new THREE.BufferGeometry();
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dpos, 3));
+      const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.8, color: type.color, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+      ringGroup.add(dust);
+      ringGroup.rotation.x = Math.PI / 2.2 + (srand() - 0.5) * 0.5;
+      group.add(ringGroup);
+      ringRef = ringGroup;
+    } else if (srand() < 0.32) {
+      const belt = new THREE.Group();
+      const beltCount = Math.floor(50 + srand() * 40);
+      for (let i = 0; i < beltCount; i++) {
+        const rock = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.8 + srand() * 2.2, 0),
+          new THREE.MeshStandardMaterial({ color: 0x9a8a7a, roughness: 0.95 })
+        );
+        const a = (i / beltCount) * Math.PI * 2 + srand() * 0.3;
+        const r = radius * 1.8 + srand() * radius * 0.5;
+        rock.position.set(Math.cos(a) * r, (srand() - 0.5) * radius * 0.2, Math.sin(a) * r);
+        rock.rotation.set(srand() * 6, srand() * 6, srand() * 6);
+        belt.add(rock);
+      }
+      belt.rotation.x = Math.PI / 2.4;
+      group.add(belt);
+      beltRef = belt;
+    }
     group.position.copy(pos);
     group.rotation.set(srand() * 6, srand() * 6, srand() * 6);
     scene.add(group);
@@ -3164,7 +3211,8 @@
       radius, type: typeKey, typeInfo: type,
       name: uniqueName(typeKey),
       rotationSpeed: 0.05 + Math.random() * 0.15,
-      ecoVisible: false, civilization: null
+      ecoVisible: false, civilization: null,
+      ring: ringRef, belt: beltRef
     };
     celestialBodies.push(body);
     maybeAddCivilization(body);
@@ -4103,6 +4151,14 @@
       ring2.rotation.x = Math.PI / 1.6;
       dyson.add(ring2);
       anims.push({ mesh: ring2, type: 'spinZ', speed: -0.08 });
+      /* 能量网：连接节点的发光网格环 */
+      const energyWeb = new THREE.Mesh(
+        new THREE.TorusGeometry(R * 1.88, 0.12, 8, 36),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })
+      );
+      energyWeb.rotation.x = Math.PI / 2.05;
+      dyson.add(energyWeb);
+      anims.push({ mesh: energyWeb, type: 'spinZ', speed: 0.18 });
       /* 科技感：内圈高亮能量环 + 反向光带 */
       const coreRing = new THREE.Mesh(
         new THREE.TorusGeometry(R * 1.72, 0.14, 8, 72),
@@ -4195,6 +4251,80 @@
       }
       g.add(storm);
       anims.push({ mesh: storm, type: 'spinY', speed: 0.35 });
+    } else if (civKey === 'carbon') {
+      /* 有机藤蔓环 + 叶片 */
+      const vine = new THREE.Mesh(new THREE.TorusGeometry(R * 1.32, 0.22, 8, 48), solidMat);
+      vine.rotation.x = Math.PI / 2.3;
+      g.add(vine);
+      anims.push({ mesh: vine, type: 'spinZ', speed: 0.1 });
+      for (let i = 0; i < 9; i++) {
+        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.4, 4), glowMat);
+        g.add(leaf);
+        anims.push({ mesh: leaf, type: 'orbit', radius: R * 1.32, angle: (i / 9) * Math.PI * 2, speed: 0.16, yBase: (Math.random() - 0.5) * 0.8, phase: i * 0.7 });
+      }
+    } else if (civKey === 'plasma') {
+      /* 日冕火焰环 + 焰舌 */
+      const fireRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.38, 0.3, 8, 48), new THREE.MeshBasicMaterial({ color: 0xff6b2a, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      fireRing.rotation.x = Math.PI / 2.4;
+      g.add(fireRing);
+      anims.push({ mesh: fireRing, type: 'spinZ', speed: 0.16 });
+      for (let i = 0; i < 10; i++) {
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.7, 2.6, 4), new THREE.MeshBasicMaterial({ color: 0xffa040, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+        g.add(flame);
+        anims.push({ mesh: flame, type: 'orbit', radius: R * 1.38, angle: (i / 10) * Math.PI * 2, speed: 0.2, yBase: 0, phase: i });
+      }
+    } else if (civKey === 'ice') {
+      /* 冰晶环 + 晶簇 */
+      const iceRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.3, 0.14, 8, 48), new THREE.MeshBasicMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      iceRing.rotation.x = Math.PI / 2.5;
+      g.add(iceRing);
+      anims.push({ mesh: iceRing, type: 'spinZ', speed: -0.12 });
+      for (let i = 0; i < 8; i++) {
+        const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.3, 0), solidMat);
+        g.add(crystal);
+        anims.push({ mesh: crystal, type: 'orbit', radius: R * 1.3, angle: (i / 8) * Math.PI * 2, speed: 0.15, yBase: (Math.random() - 0.5) * R * 0.25, phase: i });
+      }
+    } else if (civKey === 'energy') {
+      /* 纯能量光束环 */
+      const beamRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.42, 0.1, 8, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+      beamRing.rotation.x = Math.PI / 2.3;
+      g.add(beamRing);
+      anims.push({ mesh: beamRing, type: 'spinZ', speed: 0.24 });
+      for (let i = 0; i < 6; i++) {
+        const orb = new THREE.Mesh(new THREE.SphereGeometry(0.7, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+        g.add(orb);
+        anims.push({ mesh: orb, type: 'orbit', radius: R * 1.42, angle: (i / 6) * Math.PI * 2, speed: 0.3, yBase: 0, phase: i });
+      }
+    } else if (civKey === 'aquatic') {
+      /* 水流环 */
+      const waveRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.35, 0.25, 8, 48), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+      waveRing.rotation.x = Math.PI / 2.35;
+      g.add(waveRing);
+      anims.push({ mesh: waveRing, type: 'spinZ', speed: 0.12 });
+    } else if (civKey === 'mechanical') {
+      /* 齿轮环 */
+      const gearRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.35, 0.2, 6, 36), solidMat);
+      gearRing.rotation.x = Math.PI / 2.3;
+      g.add(gearRing);
+      anims.push({ mesh: gearRing, type: 'spinZ', speed: 0.2 });
+      for (let i = 0; i < 8; i++) {
+        const tooth = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.8, 0.8), solidMat);
+        g.add(tooth);
+        anims.push({ mesh: tooth, type: 'orbit', radius: R * 1.35, angle: (i / 8) * Math.PI * 2, speed: 0.2, yBase: 0, phase: i });
+      }
+    } else if (civKey === 'fungal') {
+      /* 孢子云 */
+      for (let i = 0; i < 20; i++) {
+        const spore = new THREE.Mesh(new THREE.SphereGeometry(0.6, 6, 5), glowMat);
+        g.add(spore);
+        anims.push({ mesh: spore, type: 'orbit', radius: R * (1.2 + Math.random() * 0.6), angle: Math.random() * Math.PI * 2, speed: 0.12 + Math.random() * 0.2, yBase: (Math.random() - 0.5) * R * 0.5, phase: i });
+      }
+    } else if (civKey === 'floral') {
+      /* 花瓣环 */
+      const petalRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.3, 0.18, 8, 48), new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      petalRing.rotation.x = Math.PI / 2.4;
+      g.add(petalRing);
+      anims.push({ mesh: petalRing, type: 'spinZ', speed: 0.14 });
     } else {
       const sigRing = new THREE.Mesh(new THREE.TorusGeometry(R * 1.25, 0.3, 8, 64), glowMat);
       sigRing.rotation.x = Math.PI / 2.15;
@@ -4219,7 +4349,7 @@
     tex.minFilter = THREE.LinearFilter;
     return new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
   }
-  function createLevelBadge(devLevel, devInfo, scale, civTypeName) {
+  function createLevelBadge(devLevel, devInfo, scale, civTypeName, civIcon) {
     const g = new THREE.Group();
     const colHex = '#' + devInfo.color.toString(16).padStart(6, '0');
     const ring = new THREE.Mesh(
@@ -4236,7 +4366,7 @@
       pip.position.set((i - devLevel / 2) * 0.85 * scale, 0, 0);
       g.add(pip);
     }
-    const label = makeLevelTextSprite((civTypeName ? civTypeName + ' · ' : '') + devInfo.name, colHex);
+    const label = makeLevelTextSprite((civIcon ? civIcon + ' ' : '') + (civTypeName ? civTypeName + ' · ' : '') + devInfo.name, colHex);
     label.scale.set(30 * scale, 5.6 * scale, 1);
     label.position.y = 6.5 * scale;
     g.add(label);
@@ -4259,9 +4389,17 @@
     }
     ticks.rotation.x = Math.PI / 2;
     g.add(ticks);
+    /* 旋转扫描弧 */
+    const scanArc = new THREE.Mesh(
+      new THREE.TorusGeometry(4.9 * scale, 0.05, 6, 40, Math.PI * 1.2),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    scanArc.rotation.x = Math.PI / 2;
+    g.add(scanArc);
     g.userData.ring = ring;
     g.userData.outerRing = outerRing;
     g.userData.ticks = ticks;
+    g.userData.scanArc = scanArc;
     g.userData.label = label;
     return g;
   }
@@ -4620,7 +4758,7 @@
     spaceGroup.add(spaceStructs);
     scene.add(spaceGroup);
 
-    const levelBadge = createLevelBadge(devLevel, devInfo, devInfo.markerScale, civType.name);
+    const levelBadge = createLevelBadge(devLevel, devInfo, devInfo.markerScale, civType.name, civType.icon);
     levelBadge.position.set(0, 17 * devInfo.markerScale, 0);
     markerGroup.add(levelBadge);
 
@@ -4742,7 +4880,7 @@
     const ss = 24 * devInfo.markerScale;
     sprite.scale.set(ss, ss, 1);
     markerGroup.add(sprite);
-    const levelBadge = createLevelBadge(2, devInfo, devInfo.markerScale, civType.name);
+    const levelBadge = createLevelBadge(2, devInfo, devInfo.markerScale, civType.name, civType.icon);
     levelBadge.position.set(0, 17 * devInfo.markerScale, 0);
     markerGroup.add(levelBadge);
     const offset = new THREE.Vector3(0, 1, 0).multiplyScalar(EARTH_RADIUS + 18);
@@ -5629,6 +5767,7 @@
       if (civ.levelBadge && civ.levelBadge.userData.ring) civ.levelBadge.userData.ring.rotation.z += dt * 0.6;
       if (civ.levelBadge && civ.levelBadge.userData.outerRing) civ.levelBadge.userData.outerRing.rotation.z -= dt * 0.4;
       if (civ.levelBadge && civ.levelBadge.userData.ticks) civ.levelBadge.userData.ticks.rotation.z -= dt * 0.35;
+      if (civ.levelBadge && civ.levelBadge.userData.scanArc) civ.levelBadge.userData.scanArc.rotation.z += dt * 0.8;
       civ.sprite.material.opacity = 0.65 + Math.sin(t * 2.6 + civ.bobPhase) * 0.3;
 
       for (const s of civ.orbitShips) {
@@ -7161,6 +7300,7 @@
         if (EARTH_CIV.levelBadge.userData.ring) EARTH_CIV.levelBadge.userData.ring.rotation.z += dt * 0.6;
         if (EARTH_CIV.levelBadge.userData.outerRing) EARTH_CIV.levelBadge.userData.outerRing.rotation.z -= dt * 0.4;
         if (EARTH_CIV.levelBadge.userData.ticks) EARTH_CIV.levelBadge.userData.ticks.rotation.z -= dt * 0.35;
+        if (EARTH_CIV.levelBadge.userData.scanArc) EARTH_CIV.levelBadge.userData.scanArc.rotation.z += dt * 0.8;
       }
     }
   }
@@ -7192,6 +7332,8 @@
         disposeBody(b); celestialBodies.splice(i, 1); continue;
       }
       b.group.rotation.y += b.rotationSpeed * dt;
+      if (b.belt) b.belt.rotation.y += dt * 0.25;
+      if (b.ring) b.ring.rotation.y += dt * 0.05;
       const shouldShow = rp.distanceTo(b.position) < 900 || b === landingBody;
       if (shouldShow !== b.ecoVisible) { b.ecoVisible = shouldShow; b.eco.visible = shouldShow; }
     }
@@ -7242,6 +7384,12 @@
       new THREE.MeshBasicMaterial({ color: 0x7fd4ff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
     );
     g.add(inner);
+    /* 外圈反向旋转能量环 */
+    const outerGlow = new THREE.Mesh(
+      new THREE.TorusGeometry(R * 1.14, R * 0.028, 8, 52),
+      new THREE.MeshBasicMaterial({ color: 0xbff0ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    g.add(outerGlow);
     /* 九个锁标 chevron */
     const chevrons = [];
     for (let i = 0; i < 9; i++) {
@@ -7270,7 +7418,7 @@
     );
     scene.add(g);
     return {
-      group: g, outer, inner, chevrons, horizon, halo, body,
+      group: g, outer, inner, outerGlow, chevrons, horizon, halo, body,
       orbitRadius, orbitAngle, orbitSpeed: 0.16 + Math.random() * 0.1,
       phase: Math.random() * 6.28
     };
@@ -7309,6 +7457,7 @@
       sg.group.lookAt(b.position);
       sg.outer.rotation.z += dt * 0.6;
       sg.inner.rotation.z -= dt * 0.9;
+      sg.outerGlow.rotation.z += dt * 0.4;
       sg.horizon.rotation.z += dt * 1.3;
       sg.horizon.material.opacity = 0.72 + Math.sin(t * 3 + sg.phase) * 0.15;
       const pulse = 1 + Math.sin(t * 2.2 + sg.phase) * 0.06;
@@ -7719,8 +7868,8 @@
       ONLINE.enabled = true;
       ws.send(JSON.stringify({ type: 'join', name: ONLINE.name, seed: seedString(), x: rocketOuter.position.x, y: rocketOuter.position.y, z: rocketOuter.position.z }));
       showToast('🌐 已连接联机服务器 · 你是「' + ONLINE.name + '」');
-      document.getElementById('chatPanel').style.display = '';
-      document.getElementById('friendPanel').style.display = '';
+      document.getElementById('chatToggleBtn').style.display = '';
+      document.getElementById('friendToggleBtn').style.display = '';
       document.getElementById('minimap').style.display = '';
     };
     ws.onmessage = (ev) => {
@@ -8973,6 +9122,10 @@
   if (leaveTeamBtn) leaveTeamBtn.addEventListener('click', () => sendOnline('team', { action: 'leave' }));
   const minimapEl = document.getElementById('minimap');
   if (minimapEl) minimapEl.addEventListener('click', toggleMinimap);
+  const chatToggleBtn = document.getElementById('chatToggleBtn');
+  const friendToggleBtn = document.getElementById('friendToggleBtn');
+  if (chatToggleBtn) chatToggleBtn.addEventListener('click', () => { const p = document.getElementById('chatPanel'); if (p) p.style.display = p.style.display === 'none' ? '' : 'none'; });
+  if (friendToggleBtn) friendToggleBtn.addEventListener('click', () => { const p = document.getElementById('friendPanel'); if (p) p.style.display = p.style.display === 'none' ? '' : 'none'; });
 
   muteBtn.textContent = Sound.isEnabled() ? '🔊' : '🔇';
 
