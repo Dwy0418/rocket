@@ -715,6 +715,11 @@
     <span class="setting-label" style="width:auto;">🪐 玩家昵称</span>
     <input type="text" id="playerName" maxlength="12" placeholder="旅行者" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:8px;padding:6px 10px;color:#eaf2ff;font-size:14px;">
   </div>
+  <div class="setting-row" style="justify-content:center;max-width:340px;margin:0 auto;">
+    <span class="setting-label" style="width:auto;">🎮 模式</span>
+    <button id="modeSingle" class="q-btn active" style="flex:1;">单机</button>
+    <button id="modeMulti" class="q-btn" style="flex:1;">联机</button>
+  </div>
   <div class="btn-row">
     <button id="loreStartBtn">接 受 使 命</button>
     <button id="continueBtn" class="secondary" style="display:none">继 续 旅 程</button>
@@ -6835,6 +6840,7 @@
   function startGame(saveData) {
     Sound.ensure();
     Sound.musicStart();
+    if (ONLINE.mode === 'multi') initOnline();
     clearCelestialBodies();
     closeDialogue();
     EARTH_CIV.interacted = false;
@@ -7649,6 +7655,112 @@
      二十六、主循环
   ================================================================ */
   let autoSaveTimer = 0;
+  /* ================================================================
+     联机模块（A 路线）：WebSocket 多人 —— 同步玩家位置
+   ================================================================ */
+  const ONLINE = {
+    enabled: false, socket: null, id: null, name: '旅人', mode: 'single',
+    players: new Map(), sendT: 0
+  };
+
+  function onlineName() {
+    const m = location.search.match(/[?&]name=([^&]+)/);
+    if (m && m[1]) return decodeURIComponent(m[1]).slice(0, 16);
+    const inp = document.getElementById('playerName');
+    if (inp && inp.value.trim()) return inp.value.trim().slice(0, 16);
+    return '旅人';
+  }
+  function onlineServerUrl() {
+    const m = location.search.match(/[?&]server=([^&]+)/);
+    return m && m[1] ? decodeURIComponent(m[1]) : null;
+  }
+  function initOnline() {
+    ONLINE.name = onlineName();
+    let url = onlineServerUrl();
+    if (!url) {
+      if (location.protocol === 'file:') url = 'ws://localhost:3000';
+      else url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+    }
+    let ws;
+    try { ws = new WebSocket(url); } catch (e) { return; }
+    ONLINE.socket = ws;
+    ws.onopen = () => {
+      ONLINE.enabled = true;
+      ws.send(JSON.stringify({ type: 'join', name: ONLINE.name, seed: seedString(), x: rocketOuter.position.x, y: rocketOuter.position.y, z: rocketOuter.position.z }));
+      showToast('🌐 已连接联机服务器 · 你是「' + ONLINE.name + '」');
+    };
+    ws.onmessage = (ev) => {
+      let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+      if (d.type === 'hello') ONLINE.id = d.id;
+      else if (d.type === 'join') addRemotePlayer(d);
+      else if (d.type === 'players') d.players.forEach(addRemotePlayer);
+      else if (d.type === 'pos') updateRemotePlayer(d);
+      else if (d.type === 'leave') removeRemotePlayer(d.id);
+      else if (d.type === 'chat') showToast('💬 ' + d.name + '：' + d.text);
+    };
+    ws.onclose = () => {
+      if (ONLINE.enabled) showToast('🌐 与服务器断开连接');
+      ONLINE.enabled = false;
+      for (const id of [...ONLINE.players.keys()]) removeRemotePlayer(id);
+    };
+  }
+  function makeOnlineLabel(name, color) {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+    const ctx = c.getContext('2d');
+    ctx.font = 'bold 28px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.strokeText(name, 128, 32);
+    ctx.fillStyle = color; ctx.fillText(name, 128, 32);
+    const tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
+    sp.scale.set(22, 5.5, 1);
+    return sp;
+  }
+  function addRemotePlayer(d) {
+    if (!d || d.id === ONLINE.id || ONLINE.players.has(d.id)) return;
+    const group = new THREE.Group();
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: d.color || '#66ccff', transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    sprite.scale.set(10, 10, 1);
+    group.add(sprite);
+    const label = makeOnlineLabel(d.name || '旅人', d.color || '#ffffff');
+    label.position.y = 7;
+    group.add(label);
+    group.position.set(d.x || 0, d.y || 0, d.z || 0);
+    scene.add(group);
+    ONLINE.players.set(d.id, { group, sprite, x: d.x || 0, y: d.y || 0, z: d.z || 0 });
+    showToast('👋 ' + (d.name || '旅人') + ' 进入宇宙');
+  }
+  function updateRemotePlayer(d) {
+    const p = ONLINE.players.get(d.id);
+    if (!p) return;
+    p.x = d.x; p.y = d.y; p.z = d.z;
+    p.group.position.lerp(new THREE.Vector3(d.x, d.y, d.z), 0.2);
+  }
+  function removeRemotePlayer(id) {
+    const p = ONLINE.players.get(id);
+    if (!p) return;
+    scene.remove(p.group);
+    p.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+    ONLINE.players.delete(id);
+  }
+  function sendOnlinePos() {
+    if (!ONLINE.enabled || !ONLINE.socket) return;
+    ONLINE.sendT--;
+    if (ONLINE.sendT > 0) return;
+    ONLINE.sendT = 6;
+    const p = rocketOuter.position;
+    ONLINE.socket.send(JSON.stringify({ type: 'pos', x: p.x, y: p.y, z: p.z, quat: [rocketQuat.x, rocketQuat.y, rocketQuat.z, rocketQuat.w] }));
+  }
+  function updateOnline() {
+    if (!ONLINE.enabled) return;
+    sendOnlinePos();
+    for (const p of ONLINE.players.values()) {
+      p.sprite.scale.setScalar(9 + Math.sin(performance.now() * 0.004) * 2);
+    }
+  }
+
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
@@ -7681,6 +7793,7 @@
       updateStars(dt, t);
       updateDamageNumbers(dt);
       updateRandomEvents(dt);
+      updateOnline();
       if (gameMode === MODE.FLYING) {
         autoSaveTimer += dt;
         if (autoSaveTimer > 15) { autoSaveTimer = 0; saveGame(); }
@@ -8550,6 +8663,16 @@
       saveMeta();
     });
   }
+
+  const modeSingle = document.getElementById('modeSingle');
+  const modeMulti = document.getElementById('modeMulti');
+  function setGameMode(m) {
+    ONLINE.mode = m;
+    if (modeSingle) modeSingle.classList.toggle('active', m === 'single');
+    if (modeMulti) modeMulti.classList.toggle('active', m === 'multi');
+  }
+  if (modeSingle) modeSingle.addEventListener('click', () => setGameMode('single'));
+  if (modeMulti) modeMulti.addEventListener('click', () => setGameMode('multi'));
 
   muteBtn.textContent = Sound.isEnabled() ? '🔊' : '🔇';
 
