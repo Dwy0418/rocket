@@ -21,53 +21,130 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// —— WebSocket 多人 ——
+// —— WebSocket 多人（世界/组队频道、好友、组队）——
 const wss = new WebSocket.Server({ server });
-const players = new Map(); // id -> { x, y, z, name, seed, color, quat }
+const players = new Map(); // id -> player 对象
 
 function randomColor() { return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'); }
-function broadcast(msg, except) {
-  const s = JSON.stringify(msg);
-  wss.clients.forEach(c => { if (c !== except && c.readyState === WebSocket.OPEN) c.send(s); });
+function send(ws, msg) { try { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); } catch (e) {} }
+function snapshot(id) { const p = players.get(id); return p ? { id, x: p.x, y: p.y, z: p.z, name: p.name, color: p.color, seed: p.seed, team: p.team } : null; }
+function byName(name) { for (const [id, p] of players) if (p.name === name) return id; return null; }
+function friendsSnapshots(id) {
+  const p = players.get(id);
+  if (!p || !p.friends || !p.friends.size) return [];
+  const out = [];
+  for (const fid of p.friends) { const s = snapshot(fid); if (s) out.push(s); }
+  return out;
 }
-function snapshot(id) { const p = players.get(id); return p ? { id, x: p.x, y: p.y, z: p.z, name: p.name, color: p.color, seed: p.seed } : null; }
+function teamMembers(teamName) {
+  const out = [];
+  for (const [id, p] of players) if (p.team === teamName) out.push(snapshot(id));
+  return out;
+}
+function sendTeamUpdate(teamName) {
+  const members = teamMembers(teamName);
+  for (const [id, p] of players) if (p.team === teamName) send(p.ws, { type: 'team', team: teamName, members });
+}
 
 wss.on('connection', (ws) => {
   ws.id = Math.random().toString(36).slice(2) + Date.now().toString(36);
-  players.set(ws.id, { x: 0, y: 0, z: 0, name: '旅人', seed: '', color: randomColor(), quat: [0, 0, 0, 1] });
-  ws.send(JSON.stringify({ type: 'hello', id: ws.id, online: players.size }));
+  players.set(ws.id, { ws, x: 0, y: 0, z: 0, name: '旅人', seed: '', color: randomColor(), team: '', friends: new Set(), quat: [0, 0, 0, 1] });
+  send(ws, { type: 'hello', id: ws.id, online: players.size });
 
   ws.on('message', (msg) => {
     let d;
     try { d = JSON.parse(msg); } catch (e) { return; }
+    const p = players.get(ws.id);
+    if (!p) return;
+
     if (d.type === 'join') {
-      const p = players.get(ws.id);
       p.name = (d.name || '旅人').slice(0, 16);
       p.seed = d.seed || '';
       p.color = d.color || p.color;
       p.x = d.x || 0; p.y = d.y || 0; p.z = d.z || 0;
-      // 把现有玩家发给新玩家
       const others = [...players.entries()].filter(([id]) => id !== ws.id).map(([id]) => snapshot(id)).filter(Boolean);
-      ws.send(JSON.stringify({ type: 'players', players: others }));
-      // 广播新玩家加入
-      broadcast({ type: 'join', ...snapshot(ws.id) }, ws);
-      broadcast({ type: 'chat', id: 'sys', name: '系统', text: p.name + ' 进入了宇宙' }, ws);
-    } else if (d.type === 'pos') {
-      const p = players.get(ws.id);
+      send(ws, { type: 'players', players: others });
+      for (const [id, q] of players) if (id !== ws.id) send(q.ws, { type: 'join', ...snapshot(ws.id) });
+      for (const [id, q] of players) send(q.ws, { type: 'chat', channel: 'world', name: '系统', text: p.name + ' 进入了宇宙' });
+      send(ws, { type: 'friendList', friends: friendsSnapshots(ws.id) });
+      for (const [id, q] of players) {
+        if (id !== ws.id && q.friends && q.friends.has(ws.id)) {
+          send(q.ws, { type: 'friendOnline', name: p.name });
+          send(q.ws, { type: 'friendList', friends: friendsSnapshots(id) });
+        }
+      }
+    }
+    else if (d.type === 'pos') {
       if (d.x != null) { p.x = d.x; p.y = d.y; p.z = d.z; }
       if (d.quat) p.quat = d.quat;
-      broadcast({ type: 'pos', id: ws.id, x: p.x, y: p.y, z: p.z, quat: p.quat }, ws);
-    } else if (d.type === 'chat') {
-      const p = players.get(ws.id);
-      broadcast({ type: 'chat', id: ws.id, name: p.name, text: String(d.text || '').slice(0, 120) }, ws);
+      for (const [id, q] of players) if (id !== ws.id) send(q.ws, { type: 'pos', id: ws.id, x: p.x, y: p.y, z: p.z, quat: p.quat });
+    }
+    else if (d.type === 'chat') {
+      const channel = d.channel === 'team' ? 'team' : (d.channel === 'private' ? 'private' : 'world');
+      const text = String(d.text || '').slice(0, 120);
+      if (!text) return;
+      if (channel === 'private') {
+        const tid = byName(String(d.to || ''));
+        if (!tid || tid === ws.id) { send(ws, { type: 'chat', channel: 'private', name: '系统', text: '找不到该玩家' }); return; }
+        const target = players.get(tid);
+        send(target.ws, { type: 'chat', channel: 'private', name: p.name, text });
+        send(ws, { type: 'chat', channel: 'private', name: '私聊 → ' + target.name, text });
+      } else if (channel === 'team') {
+        if (!p.team) { send(ws, { type: 'chat', channel: 'team', name: '系统', text: '你还没有加入组队' }); return; }
+        for (const [id, q] of players) if (q.team === p.team) send(q.ws, { type: 'chat', channel: 'team', name: p.name, text });
+      } else {
+        for (const [id, q] of players) send(q.ws, { type: 'chat', channel: 'world', name: p.name, text });
+      }
+    }
+    else if (d.type === 'team') {
+      if (d.action === 'join') {
+        const name = String(d.name || '').slice(0, 24);
+        if (!name) return;
+        p.team = name;
+        sendTeamUpdate(name);
+        send(ws, { type: 'chat', channel: 'team', name: '系统', text: '你已加入组队「' + name + '」' });
+      } else if (d.action === 'leave') {
+        p.team = '';
+        send(ws, { type: 'team', team: '', members: [] });
+      }
+    }
+    else if (d.type === 'friend') {
+      if (d.action === 'add') {
+        const fid = byName(String(d.name || ''));
+        if (!fid || fid === ws.id) { send(ws, { type: 'friendResult', ok: false, text: '找不到该玩家或不能添加自己' }); return; }
+        const target = players.get(fid);
+        send(ws, { type: 'friendResult', ok: true, text: '好友申请已发送给 ' + target.name });
+        send(target.ws, { type: 'friendRequest', fromId: ws.id, fromName: p.name });
+      } else if (d.action === 'accept') {
+        const fid = byName(String(d.name || ''));
+        if (fid) {
+          p.friends.add(fid);
+          const target = players.get(fid);
+          if (target) target.friends.add(ws.id);
+          send(ws, { type: 'friendList', friends: friendsSnapshots(ws.id) });
+          if (target) { send(target.ws, { type: 'friendList', friends: friendsSnapshots(fid) }); send(target.ws, { type: 'friendResult', ok: true, text: p.name + ' 接受了你的好友申请' }); }
+        }
+      } else if (d.action === 'decline') {
+        const fid = byName(String(d.name || ''));
+        if (fid) { const target = players.get(fid); if (target) send(target.ws, { type: 'friendResult', ok: false, text: p.name + ' 拒绝了你的好友申请' }); }
+      } else if (d.action === 'remove') {
+        const fid = byName(String(d.name || ''));
+        if (fid) { p.friends.delete(fid); const target = players.get(fid); if (target) target.friends.delete(ws.id); }
+        send(ws, { type: 'friendList', friends: friendsSnapshots(ws.id) });
+      }
     }
   });
 
   ws.on('close', () => {
     const p = players.get(ws.id);
     players.delete(ws.id);
-    broadcast({ type: 'leave', id: ws.id });
-    if (p) broadcast({ type: 'chat', id: 'sys', name: '系统', text: p.name + ' 离开了宇宙' }, ws);
+    for (const [id, q] of players) send(q.ws, { type: 'leave', id: ws.id });
+    if (p) {
+      for (const [id, q] of players) {
+        send(q.ws, { type: 'chat', channel: 'world', name: '系统', text: p.name + ' 离开了宇宙' });
+        if (q.friends && q.friends.has(ws.id)) { send(q.ws, { type: 'friendList', friends: friendsSnapshots(id) }); send(q.ws, { type: 'friendOffline', name: p.name }); }
+      }
+    }
   });
   ws.on('error', () => {});
 });

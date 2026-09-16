@@ -839,6 +839,34 @@
   </div>
 </div>
 
+<!-- 联机 UI：聊天、好友/组队、小地图 -->
+<div id="chatPanel" style="position:fixed;left:12px;bottom:12px;width:320px;z-index:20;font-family:'Segoe UI',sans-serif;display:none;">
+  <div style="display:flex;gap:4px;margin-bottom:4px;">
+    <button id="chatTabWorld" style="flex:1;padding:5px;border-radius:6px 6px 0 0;border:1px solid rgba(140,180,255,.4);background:rgba(40,70,140,.6);color:#eaf2ff;cursor:pointer;font-size:13px;">🌍 世界</button>
+    <button id="chatTabTeam" style="flex:1;padding:5px;border-radius:6px 6px 0 0;border:1px solid rgba(140,180,255,.4);background:rgba(20,30,60,.6);color:#9fb6d8;cursor:pointer;font-size:13px;">👥 组队</button>
+    <button id="chatTabPrivate" style="flex:1;padding:5px;border-radius:6px 6px 0 0;border:1px solid rgba(140,180,255,.4);background:rgba(20,30,60,.6);color:#9fb6d8;cursor:pointer;font-size:13px;">💌 私聊</button>
+  </div>
+  <div id="chatList" style="height:130px;overflow-y:auto;background:rgba(8,14,30,.78);border-radius:0 0 8px 8px;padding:6px 8px;font-size:12px;color:#dce7ff;line-height:1.5;"></div>
+  <div id="mentionDrop" style="display:none;position:absolute;bottom:44px;left:8px;right:8px;background:rgba(10,16,34,.96);border:1px solid rgba(140,180,255,.4);border-radius:8px;max-height:150px;overflow-y:auto;z-index:22;"></div>
+  <input id="chatInput" placeholder="按回车发送…" style="width:100%;margin-top:4px;box-sizing:border-box;background:rgba(8,14,30,.78);border:1px solid rgba(140,180,255,.3);border-radius:8px;padding:7px 10px;color:#eaf2ff;font-size:13px;">
+</div>
+
+<div id="friendPanel" style="position:fixed;right:12px;top:120px;width:220px;z-index:20;font-family:'Segoe UI',sans-serif;display:none;background:rgba(8,14,30,.78);border:1px solid rgba(140,180,255,.3);border-radius:10px;padding:10px;">
+  <div style="font-size:14px;color:#bfd8ff;margin-bottom:8px;">👥 好友 / 组队</div>
+  <div style="display:flex;gap:4px;margin-bottom:6px;">
+    <input id="friendNameInput" placeholder="好友昵称" style="flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:6px;padding:5px 8px;color:#eaf2ff;font-size:12px;">
+    <button id="addFriendBtn" style="background:rgba(60,120,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">添加</button>
+  </div>
+  <div style="display:flex;gap:4px;margin-bottom:8px;">
+    <input id="teamNameInput" placeholder="组队名" style="flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.25);border-radius:6px;padding:5px 8px;color:#eaf2ff;font-size:12px;">
+    <button id="joinTeamBtn" style="background:rgba(120,80,220,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">组队</button>
+    <button id="leaveTeamBtn" style="background:rgba(220,80,80,.7);border:none;color:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;">退队</button>
+  </div>
+  <div id="friendList" style="max-height:220px;overflow-y:auto;font-size:12px;color:#dce7ff;"></div>
+</div>
+
+<canvas id="minimap" width="200" height="200" style="position:fixed;top:12px;right:12px;width:170px;height:170px;z-index:19;border-radius:50%;background:rgba(8,14,30,.7);border:1px solid rgba(140,180,255,.4);display:none;cursor:pointer;" title="按 M 放大/缩小"></canvas>
+
 <script src="three.min.js"></script>
 
 <script>
@@ -6737,6 +6765,7 @@
       if (state.running && gameMode === MODE.LANDED) establishBeacon();
     }
     if (k === 'l') { shareSeed(); }
+    if (k === 'm') { toggleMinimap(); }
     if (k === 'f') {
       if (state.running && gameMode === MODE.LANDED) {
         if (currentCivForDialogue) advanceDialogue();
@@ -7660,7 +7689,9 @@
    ================================================================ */
   const ONLINE = {
     enabled: false, socket: null, id: null, name: '旅人', mode: 'single',
-    players: new Map(), sendT: 0
+    players: new Map(), sendT: 0,
+    friends: new Map(), team: '', teamMembers: new Map(), channel: 'world', followId: null, minimapBig: false,
+    chatHistory: { world: [], team: [], private: [] }, pendingRequests: [], privateWith: ''
   };
 
   function onlineName() {
@@ -7688,15 +7719,29 @@
       ONLINE.enabled = true;
       ws.send(JSON.stringify({ type: 'join', name: ONLINE.name, seed: seedString(), x: rocketOuter.position.x, y: rocketOuter.position.y, z: rocketOuter.position.z }));
       showToast('🌐 已连接联机服务器 · 你是「' + ONLINE.name + '」');
+      document.getElementById('chatPanel').style.display = '';
+      document.getElementById('friendPanel').style.display = '';
+      document.getElementById('minimap').style.display = '';
     };
     ws.onmessage = (ev) => {
       let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
       if (d.type === 'hello') ONLINE.id = d.id;
       else if (d.type === 'join') addRemotePlayer(d);
       else if (d.type === 'players') d.players.forEach(addRemotePlayer);
-      else if (d.type === 'pos') updateRemotePlayer(d);
-      else if (d.type === 'leave') removeRemotePlayer(d.id);
-      else if (d.type === 'chat') showToast('💬 ' + d.name + '：' + d.text);
+      else if (d.type === 'pos') { updateRemotePlayer(d); updateFriendPos(d); }
+      else if (d.type === 'leave') { removeRemotePlayer(d.id); markFriendOffline(d.id); }
+      else if (d.type === 'chat') addChatLine(d.channel || 'world', d.name, d.text);
+      else if (d.type === 'friendList') updateFriends(d.friends);
+      else if (d.type === 'friendRequest') {
+        ONLINE.pendingRequests.push({ fromId: d.fromId, fromName: d.fromName });
+        showToast('👋 ' + d.fromName + ' 想加你为好友');
+        Sound.beacon();
+        renderFriendList();
+      }
+      else if (d.type === 'friendResult') showToast((d.ok ? '✅ ' : '⚠️ ') + (d.text || ''));
+      else if (d.type === 'team') updateTeam(d);
+      else if (d.type === 'friendOnline') showToast('🟢 好友 ' + d.name + ' 上线了');
+      else if (d.type === 'friendOffline') showToast('⚫ 好友 ' + d.name + ' 下线了');
     };
     ws.onclose = () => {
       if (ONLINE.enabled) showToast('🌐 与服务器断开连接');
@@ -7729,7 +7774,7 @@
     group.add(label);
     group.position.set(d.x || 0, d.y || 0, d.z || 0);
     scene.add(group);
-    ONLINE.players.set(d.id, { group, sprite, x: d.x || 0, y: d.y || 0, z: d.z || 0 });
+    ONLINE.players.set(d.id, { group, sprite, x: d.x || 0, y: d.y || 0, z: d.z || 0, name: d.name || '旅人', color: d.color || '#66ccff' });
     showToast('👋 ' + (d.name || '旅人') + ' 进入宇宙');
   }
   function updateRemotePlayer(d) {
@@ -7759,6 +7804,202 @@
     for (const p of ONLINE.players.values()) {
       p.sprite.scale.setScalar(9 + Math.sin(performance.now() * 0.004) * 2);
     }
+    if (ONLINE.followId) {
+      for (const [name, f] of ONLINE.friends) {
+        if (f.id === ONLINE.followId && f.online && f.x != null) {
+          const target = new THREE.Vector3(f.x, f.y, f.z);
+          const d = rocketOuter.position.distanceTo(target);
+          if (d > 30) rocketOuter.position.addScaledVector(target.clone().sub(rocketOuter.position).normalize(), Math.min(d, 400) * 0.05);
+          break;
+        }
+      }
+    }
+    renderMinimap();
+  }
+
+  /* —— 聊天 / 好友 / 组队 —— */
+  function addChatLine(channel, name, text) {
+    if (channel === 'private') {
+      const arr = ONLINE.chatHistory.private;
+      arr.push({ name, text });
+      if (arr.length > 500) arr.shift();
+      if (ONLINE.channel === 'private') renderChat();
+      else { showToast('💌 ' + name + '：' + text); Sound.beacon(); }
+      return;
+    }
+    const key = channel === 'team' ? 'team' : 'world';
+    const arr = ONLINE.chatHistory[key];
+    arr.push({ name, text });
+    if (arr.length > 500) arr.shift();
+    if (channel === 'world' && text.includes('@' + ONLINE.name)) {
+      showToast('🔔 ' + name + ' 提到了你');
+      Sound.beacon();
+    }
+    if (channel === ONLINE.channel) renderChat();
+  }
+  function renderChat() {
+    const list = document.getElementById('chatList');
+    if (!list) return;
+    list.innerHTML = '';
+    const arr = ONLINE.chatHistory[ONLINE.channel] || [];
+    for (const m of arr) {
+      const div = document.createElement('div');
+      const col = ONLINE.channel === 'team' ? '#c4b5fd' : (ONLINE.channel === 'private' ? '#ffd0f0' : (m.name === '系统' ? '#ffd060' : '#a8d8ff'));
+      div.innerHTML = '<span style="color:' + col + '">' + m.name + '：</span>' + m.text;
+      list.appendChild(div);
+    }
+    list.scrollTop = list.scrollHeight;
+  }
+  function sendOnline(action, payload) {
+    if (!ONLINE.socket || !ONLINE.enabled) return;
+    try { ONLINE.socket.send(JSON.stringify(Object.assign({ type: action }, payload))); } catch (e) {}
+  }
+  function sendChat() {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    if (text.startsWith('/w ')) {
+      const rest = text.slice(3).trim();
+      const sp = rest.indexOf(' ');
+      if (sp < 0) { addChatLine('world', '系统', '用法：/w 昵称 消息'); return; }
+      const to = rest.slice(0, sp);
+      const msg = rest.slice(sp + 1);
+      ONLINE.privateWith = to;
+      sendOnline('chat', { channel: 'private', to, text: msg });
+      return;
+    }
+    if (ONLINE.channel === 'team') {
+      if (!ONLINE.team) { addChatLine('team', '系统', '你还没有加入组队'); return; }
+      sendOnline('chat', { channel: 'team', text });
+    } else if (ONLINE.channel === 'private') {
+      if (!ONLINE.privateWith) { addChatLine('private', '系统', '先点好友的「私聊」'); return; }
+      sendOnline('chat', { channel: 'private', to: ONLINE.privateWith, text });
+    } else {
+      sendOnline('chat', { channel: 'world', text });
+    }
+  }
+  function updateFriends(list) {
+    ONLINE.friends.clear();
+    for (const f of list || []) ONLINE.friends.set(f.name, { id: f.id, name: f.name, color: f.color, x: f.x, y: f.y, z: f.z, online: true });
+    renderFriendList();
+  }
+  function updateTeam(d) {
+    ONLINE.team = d.team || '';
+    ONLINE.teamMembers.clear();
+    for (const m of d.members || []) if (m.id !== ONLINE.id) ONLINE.teamMembers.set(m.name, { id: m.id, name: m.name, color: m.color, x: m.x, y: m.y, z: m.z });
+    renderFriendList();
+  }
+  function updateFriendPos(d) {
+    for (const [name, f] of ONLINE.friends) if (f.id === d.id) { f.x = d.x; f.y = d.y; f.z = d.z; f.online = true; }
+    for (const [name, m] of ONLINE.teamMembers) if (m.id === d.id) { m.x = d.x; m.y = d.y; m.z = d.z; }
+  }
+  function markFriendOffline(id) {
+    for (const [name, f] of ONLINE.friends) if (f.id === id) { f.online = false; break; }
+    renderFriendList();
+  }
+
+  function renderFriendList() {
+    const el = document.getElementById('friendList');
+    if (!el) return;
+    el.innerHTML = '';
+    if (ONLINE.pendingRequests.length) {
+      const sec = document.createElement('div');
+      sec.style.cssText = 'color:#ffd060;font-size:12px;margin-bottom:4px;';
+      sec.textContent = '📩 好友申请：';
+      el.appendChild(sec);
+      for (const req of ONLINE.pendingRequests) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:3px 0;';
+        row.innerHTML = '<span style="min-width:0;">' + req.fromName + '</span><span>' +
+          '<button data-accept="' + req.fromName + '" style="background:none;border:none;color:#8fffb8;cursor:pointer;font-size:12px;">接受</button>' +
+          '<button data-decline="' + req.fromName + '" style="background:none;border:none;color:#ff9a9a;cursor:pointer;font-size:12px;">拒绝</button>' +
+          '</span>';
+        el.appendChild(row);
+      }
+      el.querySelectorAll('button[data-accept]').forEach(b => b.addEventListener('click', () => {
+        sendOnline('friend', { action: 'accept', name: b.getAttribute('data-accept') });
+        ONLINE.pendingRequests = ONLINE.pendingRequests.filter(r => r.fromName !== b.getAttribute('data-accept'));
+        renderFriendList();
+      }));
+      el.querySelectorAll('button[data-decline]').forEach(b => b.addEventListener('click', () => {
+        sendOnline('friend', { action: 'decline', name: b.getAttribute('data-decline') });
+        ONLINE.pendingRequests = ONLINE.pendingRequests.filter(r => r.fromName !== b.getAttribute('data-decline'));
+        renderFriendList();
+      }));
+    }
+    if (!ONLINE.friends.size) { if (!ONLINE.pendingRequests.length) el.innerHTML = '<div style="color:#7f9bff;">暂无好友（添加后可看对方位置）</div>'; return; }
+    for (const [name, f] of ONLINE.friends) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(140,180,255,.12);';
+      const d = (f.online && f.x != null) ? Math.floor(Math.hypot(f.x - rocketOuter.position.x, f.z - rocketOuter.position.z)) : null;
+      row.innerHTML = '<span style="min-width:0;"><span style="color:' + (f.color || '#fff') + '">●</span> ' + name + ' <span style="color:#7f9bff;font-size:11px;">' + (f.online ? d + 'u' : '离线') + '</span></span>' +
+        '<span>' +
+        '<button data-act="whisper" data-name="' + name + '" style="background:none;border:none;color:#ffd0f0;cursor:pointer;font-size:12px;">私聊</button>' +
+        '<button data-act="follow" data-name="' + name + '" style="background:none;border:none;color:#8fd4ff;cursor:pointer;font-size:12px;">跟随</button>' +
+        '<button data-act="tp" data-name="' + name + '" style="background:none;border:none;color:#8fffb8;cursor:pointer;font-size:12px;">传送</button>' +
+        '<button data-act="del" data-name="' + name + '" style="background:none;border:none;color:#ff9a9a;cursor:pointer;font-size:12px;">✕</button>' +
+        '</span>';
+      el.appendChild(row);
+    }
+    el.querySelectorAll('button[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-name');
+        const f = ONLINE.friends.get(name);
+        if (!f) return;
+        const act = btn.getAttribute('data-act');
+        if (act === 'del') sendOnline('friend', { action: 'remove', name });
+        else if (act === 'tp') { if (f.online && f.x != null) teleportToFriend(f); else showToast('⚠️ 好友不在线'); }
+        else if (act === 'follow') { ONLINE.followId = ONLINE.followId === f.id ? null : f.id; showToast(ONLINE.followId ? ('🛰️ 正在跟随 ' + name) : '已取消跟随'); }
+        else if (act === 'whisper') { ONLINE.privateWith = name; setChatChannel('private'); const ci = document.getElementById('chatInput'); if (ci) ci.focus(); }
+      });
+    });
+  }
+  function teleportToFriend(f) {
+    rocketOuter.position.set(f.x, f.y, f.z);
+    gameMode = MODE.FLYING; landingBody = null; landedCiv = null;
+    crosshairEl.classList.remove('hide'); promptEl.classList.remove('show');
+    Sound.warpIn();
+    showToast('🌀 已传送到好友附近');
+  }
+  function renderMinimap() {
+    const cv = document.getElementById('minimap');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height, cx = W / 2, cy = H / 2;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(6,12,26,.9)';
+    ctx.beginPath(); ctx.arc(cx, cy, cx - 1, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(140,180,255,.5)';
+    ctx.beginPath(); ctx.arc(cx, cy, cx - 1, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(140,180,255,.2)';
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+    const scale = 0.08, R = cx - 8;
+    const draw = (px, pz, color, r) => {
+      let dx = (px - rocketOuter.position.x) * scale;
+      let dz = (pz - rocketOuter.position.z) * scale;
+      const dd = Math.hypot(dx, dz);
+      if (dd > R) { dx *= R / dd; dz *= R / dd; }
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(cx + dx, cy + dz, r || 3.5, 0, Math.PI * 2); ctx.fill();
+    };
+    /* 行星（无文明灰、有文明用文明色） */
+    for (const b of celestialBodies) {
+      if (b.position.distanceTo(rocketOuter.position) > 6000) continue;
+      let c = '#7a8a9a';
+      if (b.civilization && b.civilization.typeInfo) c = '#' + b.civilization.typeInfo.color.toString(16).padStart(6, '0');
+      draw(b.position.x, b.position.z, c, 2);
+    }
+    /* 天灾 */
+    for (const bh of blackHoles) if (bh.position.distanceTo(rocketOuter.position) < 8000) draw(bh.position.x, bh.position.z, '#ff5555', 3);
+    for (const ds of darkStorms) if (ds.position.distanceTo(rocketOuter.position) < 8000) draw(ds.position.x, ds.position.z, '#c084fc', 3);
+    for (const gb of gammaBursts) if (gb.origin.distanceTo(rocketOuter.position) < 8000) draw(gb.origin.x, gb.origin.z, '#5affc8', 3);
+    /* 好友 + 队友 */
+    for (const [name, f] of ONLINE.friends) if (f.online && f.x != null) draw(f.x, f.z, f.color || '#ffd060', 4);
+    for (const [name, m] of ONLINE.teamMembers) draw(m.x, m.z, '#c4b5fd', 4);
   }
 
   function animate() {
@@ -8673,6 +8914,65 @@
   }
   if (modeSingle) modeSingle.addEventListener('click', () => setGameMode('single'));
   if (modeMulti) modeMulti.addEventListener('click', () => setGameMode('multi'));
+
+  function toggleMinimap() {
+    const mm = document.getElementById('minimap');
+    if (!mm) return;
+    ONLINE.minimapBig = !ONLINE.minimapBig;
+    mm.style.width = (ONLINE.minimapBig ? 340 : 170) + 'px';
+    mm.style.height = (ONLINE.minimapBig ? 340 : 170) + 'px';
+  }
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendChat(); } });
+  if (chatInput) chatInput.addEventListener('input', checkMention);
+  const tabWorld = document.getElementById('chatTabWorld');
+  const tabTeam = document.getElementById('chatTabTeam');
+  const tabPrivate = document.getElementById('chatTabPrivate');
+  function setChatChannel(c) {
+    ONLINE.channel = c;
+    if (tabWorld) tabWorld.style.background = c === 'world' ? 'rgba(40,70,140,.6)' : 'rgba(20,30,60,.6)';
+    if (tabTeam) tabTeam.style.background = c === 'team' ? 'rgba(40,70,140,.6)' : 'rgba(20,30,60,.6)';
+    if (tabPrivate) tabPrivate.style.background = c === 'private' ? 'rgba(40,70,140,.6)' : 'rgba(20,30,60,.6)';
+    renderChat();
+  }
+  if (tabWorld) tabWorld.addEventListener('click', () => setChatChannel('world'));
+  if (tabTeam) tabTeam.addEventListener('click', () => setChatChannel('team'));
+  if (tabPrivate) tabPrivate.addEventListener('click', () => setChatChannel('private'));
+  function allOnlineNames() {
+    const names = new Set();
+    for (const [id, p] of ONLINE.players) if (p.name) names.add(p.name);
+    for (const [name] of ONLINE.friends) names.add(name);
+    for (const [name] of ONLINE.teamMembers) names.add(name);
+    return [...names].filter(n => n !== ONLINE.name);
+  }
+  function checkMention() {
+    const input = document.getElementById('chatInput');
+    const drop = document.getElementById('mentionDrop');
+    if (!input || !drop) return;
+    const v = input.value;
+    const atIdx = v.lastIndexOf('@');
+    if (atIdx < 0 || ONLINE.channel !== 'world') { drop.style.display = 'none'; return; }
+    const query = v.slice(atIdx + 1);
+    const names = allOnlineNames().filter(n => n.startsWith(query));
+    if (!names.length) { drop.style.display = 'none'; return; }
+    drop.innerHTML = '';
+    for (const n of names.slice(0, 6)) {
+      const d = document.createElement('div');
+      d.style.cssText = 'padding:4px 8px;cursor:pointer;color:#dce7ff;';
+      d.textContent = '@' + n;
+      d.addEventListener('mousedown', e => { e.preventDefault(); input.value = v.slice(0, atIdx) + '@' + n + ' '; drop.style.display = 'none'; input.focus(); });
+      drop.appendChild(d);
+    }
+    drop.style.display = '';
+  }
+  const addFriendBtn = document.getElementById('addFriendBtn');
+  if (addFriendBtn) addFriendBtn.addEventListener('click', () => { const i = document.getElementById('friendNameInput'); const n = i ? i.value.trim() : ''; if (n) { i.value = ''; sendOnline('friend', { action: 'add', name: n }); } });
+  const joinTeamBtn = document.getElementById('joinTeamBtn');
+  if (joinTeamBtn) joinTeamBtn.addEventListener('click', () => { const i = document.getElementById('teamNameInput'); const n = i ? i.value.trim() : ''; if (n) sendOnline('team', { action: 'join', name: n }); });
+  const leaveTeamBtn = document.getElementById('leaveTeamBtn');
+  if (leaveTeamBtn) leaveTeamBtn.addEventListener('click', () => sendOnline('team', { action: 'leave' }));
+  const minimapEl = document.getElementById('minimap');
+  if (minimapEl) minimapEl.addEventListener('click', toggleMinimap);
 
   muteBtn.textContent = Sound.isEnabled() ? '🔊' : '🔇';
 
