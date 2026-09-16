@@ -820,6 +820,26 @@
     <button class="close-btn" id="shopClose">✕</button>
     <h3>🛒 商店</h3>
     <div id="shopList"></div>
+    <h3 style="margin-top:14px;">⚔️ 攻击技能</h3>
+    <div id="skillList"></div>
+  </div>
+</div>
+
+<div id="stargateModal" class="modal">
+  <div class="card">
+    <button class="close-btn" id="stargateClose">✕</button>
+    <h3>🌀 星门传送</h3>
+    <div style="font-size:12px;color:#9fb6d8;margin-bottom:8px;">选择目的地 · 按距离消耗觉醒度</div>
+    <div id="stargateList"></div>
+  </div>
+</div>
+
+<div id="federationModal" class="modal">
+  <div class="card">
+    <button class="close-btn" id="federationClose">✕</button>
+    <h3>🪐 群星联邦</h3>
+    <div style="font-size:12px;color:#9fb6d8;margin-bottom:8px;">五大星系交汇的贸易枢纽</div>
+    <div id="federationList"></div>
   </div>
 </div>
 
@@ -872,7 +892,49 @@
   <div id="friendList" style="max-height:220px;overflow-y:auto;font-size:12px;color:#dce7ff;"></div>
 </div>
 
-<canvas id="minimap" width="200" height="200" style="position:fixed;top:12px;right:12px;width:170px;height:170px;z-index:19;border-radius:50%;background:rgba(8,14,30,.7);border:1px solid rgba(140,180,255,.4);display:none;cursor:pointer;" title="按 M 放大/缩小"></canvas>
+<canvas id="minimap" width="200" height="200" style="position:fixed;top:12px;left:12px;width:170px;height:170px;z-index:19;border-radius:50%;background:rgba(8,14,30,.7);border:1px solid rgba(140,180,255,.4);display:none;cursor:pointer;" title="按 M 放大/缩小"></canvas>
+<div id="trackHud" style="position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:18;padding:6px 14px;border-radius:999px;background:rgba(10,22,44,.9);border:1px solid rgba(255,208,96,.5);color:#ffd060;font-size:13px;display:none;"></div>
+<div id="nightOverlay" style="position:fixed;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at center, rgba(6,10,28,0) 40%, rgba(6,10,28,0.9) 100%);opacity:0;transition:opacity 1s linear;"></div>
+<div id="fullMap" style="position:fixed;inset:0;z-index:100;background:rgba(4,8,20,.95);display:none;">
+  <canvas id="fullMapCanvas"></canvas>
+  <button id="fullMapClose" style="position:absolute;top:16px;right:20px;padding:8px 16px;border-radius:8px;background:rgba(60,80,140,.8);border:1px solid rgba(140,180,255,.5);color:#fff;font-size:14px;cursor:pointer;">✕ 关闭 (M)</button>
+  <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#7f9bff;font-size:12px;">拖动平移 · 滚轮缩放 · M 关闭</div>
+</div>
+
+<div id="racePanel" style="position:fixed;right:12px;top:12px;width:240px;z-index:17;font-family:'Segoe UI',sans-serif;background:rgba(8,14,30,.82);border:1px solid rgba(255,208,96,.35);border-radius:10px;padding:10px;display:none;color:#ffd060;">
+  <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🏆 宇宙种族比赛</div>
+  <div style="font-size:11px;color:#9fb6d8;margin-bottom:4px;" id="raceTimer">进行中 · 24:00</div>
+  <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:8px;">
+    <div id="raceBar" style="height:100%;width:0%;background:linear-gradient(90deg,#ffd060,#ff9a5a);"></div>
+  </div>
+  <div id="raceRankList" style="font-size:11px;color:#dce7ff;line-height:1.5;"></div>
+</div>
+
+<div id="venueScoreboard" style="position:fixed;left:50%;bottom:38%;transform:translateX(-50%);z-index:18;background:rgba(8,14,30,.88);border:1px solid rgba(255,208,96,.5);border-radius:10px;padding:12px 16px;display:none;color:#ffd060;font-family:'Segoe UI',sans-serif;text-align:center;min-width:220px;">
+  <div style="font-size:14px;font-weight:bold;margin-bottom:6px;">🏆 实时赛况</div>
+  <div id="venueScoreList" style="font-size:13px;color:#dce7ff;line-height:1.7;"></div>
+</div>
+
+<div id="dim35Overlay" style="position:fixed;inset:0;pointer-events:none;z-index:6;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 20%, rgba(0,0,10,0.88) 100%);opacity:0;transition:opacity 0.8s linear;"></div>
+
+<div id="darkGodModal" class="modal">
+  <div class="card">
+    <button class="close-btn" id="darkGodClose">✕</button>
+    <h3>👁️ 黑神 · 暗黑国度</h3>
+    <div style="font-size:12px;color:#b8a0e0;margin-bottom:8px;">「欢迎来到我的维度，异界旅人。」</div>
+    <div id="darkGodList"></div>
+  </div>
+</div>
+
+<div id="ecoView" style="position:fixed;inset:0;z-index:60;background:rgba(4,8,20,.9);display:none;align-items:center;justify-content:center;padding:24px;">
+  <div style="max-width:560px;text-align:center;color:#cfe0ff;font-family:'Segoe UI',sans-serif;">
+    <div id="ecoTitle" style="font-size:20px;font-weight:bold;color:#8fffbe;margin-bottom:18px;">🌿 生态观察</div>
+    <div id="ecoText" style="font-size:15px;line-height:1.9;color:#dce7ff;"></div>
+    <button id="ecoClose" style="margin-top:24px;padding:10px 26px;border-radius:8px;background:rgba(60,120,90,.8);border:1px solid rgba(140,220,180,.5);color:#fff;font-size:15px;cursor:pointer;">返 回</button>
+  </div>
+</div>
+
+<div id="skillBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:16;display:flex;gap:8px;font-family:'Segoe UI',sans-serif;"></div>
 
 <script src="three.min.js"></script>
 
@@ -977,6 +1039,41 @@
     return tex;
   }
 
+  function makeCloudTexture() {
+    const W = 512, H = 256;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < 90; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const r = 18 + Math.random() * 60;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(255,255,255,0.85)');
+      g.addColorStop(0.55, 'rgba(255,255,255,0.35)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  function makeNightTexture() {
+    const W = 512, H = 256;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 500; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const r = 0.5 + Math.random() * 2;
+      ctx.fillStyle = 'rgba(255,190,90,' + (0.3 + Math.random() * 0.6) + ')';
+      ctx.fillRect(x, y, r, r);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    return tex;
+  }
+
   function makeStarTexture() {
     const S = 128;
     const c = document.createElement('canvas'); c.width = c.height = S;
@@ -1070,6 +1167,18 @@
       const x = Math.random() * W, y = Math.random() * H, r = 0.5 + Math.random() * 3;
       ctx.fillStyle = 'rgba(0,0,0,' + (0.08 + Math.random() * 0.22) + ')';
       ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    /* 山脉/地形起伏层 */
+    if (type !== 'gas') {
+      for (let i = 0; i < 14; i++) {
+        const x = Math.random() * W, y = Math.random() * H, r = 6 + Math.random() * 22;
+        const light = 20 + Math.random() * 20;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, 'hsla(' + baseHue + ',30%,' + (light + 10) + '%,0.35)');
+        g.addColorStop(1, 'hsla(' + baseHue + ',30%,' + (light - 8) + '%,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
     }
     if (type === 'lava') {
       for (let i = 0; i < 25; i++) {
@@ -1321,6 +1430,18 @@
   earthSphere.castShadow = true;
   earthSphere.receiveShadow = true;
   earthGroup.add(earthSphere);
+  /* 云层（独立旋转动画） */
+  const earthClouds = new THREE.Mesh(
+    new THREE.SphereGeometry(EARTH_RADIUS * 1.035, getQuality().sphereSeg, Math.floor(getQuality().sphereSeg * 0.66)),
+    new THREE.MeshBasicMaterial({ map: makeCloudTexture(), transparent: true, opacity: 0.7, depthWrite: false })
+  );
+  earthGroup.add(earthClouds);
+  /* 城市夜景（夜晚发光） */
+  const earthNight = new THREE.Mesh(
+    new THREE.SphereGeometry(EARTH_RADIUS * 1.025, getQuality().sphereSeg, Math.floor(getQuality().sphereSeg * 0.66)),
+    new THREE.MeshBasicMaterial({ map: makeNightTexture(), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  earthGroup.add(earthNight);
   earthGroup.add(new THREE.Mesh(
     new THREE.SphereGeometry(EARTH_RADIUS * 1.06, getQuality().ringSeg, Math.floor(getQuality().ringSeg * 0.66)),
     new THREE.MeshBasicMaterial({
@@ -1360,9 +1481,11 @@
     window.__starfield = stars;
   })();
 
-  /* 宇宙边界 · 伽马风暴墙（极光带 + 湍流粒子 + 伽马闪电弧） */
+  /* 宇宙中央 · 伽马分界墙（把宇宙一分为二：x>墙=文明发展地，x<墙=星空矿场） */
   let wallWarned = false;
-  const GAMMA_WALL_R = 65000;
+  let lastWallSide = null;
+  const GAMMA_WALL_X = -20000;   // 分界墙所在平面 x = GAMMA_WALL_X
+  const GAMMA_WALL_R = 60000;    // 墙的圆盘半径
   const gammaWall = {
     group: null, layers: [], bands: [], sprites: [],
     boltGroup: null, bolts: [], boltTimer: 1.2, pulse: 0
@@ -1372,27 +1495,30 @@
     const q = getQuality();
     const R = GAMMA_WALL_R;
     const group = new THREE.Group();
+    group.position.x = GAMMA_WALL_X;
     const cTmp = new THREE.Color();
 
-    /* 1) 三层湍流粒子壳：不同半径 + 不同自转速度，形成流动的极光湍流感 */
+    /* 1) 多层湍流粒子盘：位于 YZ 平面的巨大圆盘，沿 X 轴有厚度，含细密伽马粒子层 */
     const layerSpecs = [
-      { r: R, thick: 5200, count: Math.round(7000 * q.galaxyMult), size: 5, hueA: 0.40, hueB: 0.10, spin: 0.0035, op: 0.92 },
-      { r: R - 2600, thick: 3600, count: Math.round(3600 * q.galaxyMult), size: 8, hueA: 0.34, hueB: 0.14, spin: -0.0052, op: 0.62 },
-      { r: R + 3200, thick: 4200, count: Math.round(2400 * q.galaxyMult), size: 3, hueA: 0.46, hueB: 0.06, spin: 0.0021, op: 0.70 }
+      { r: R, thick: 9000, count: Math.round(22000 * q.galaxyMult), size: 5, hueA: 0.40, hueB: 0.10, spin: 0.004, op: 0.92 },
+      { r: R * 0.93, thick: 6000, count: Math.round(11000 * q.galaxyMult), size: 8, hueA: 0.34, hueB: 0.14, spin: -0.006, op: 0.62 },
+      { r: R * 0.98, thick: 3200, count: Math.round(7500 * q.galaxyMult), size: 3, hueA: 0.46, hueB: 0.06, spin: 0.0025, op: 0.70 },
+      { r: R, thick: 5000, count: Math.round(14000 * q.galaxyMult), size: 1.6, hueA: 0.40, hueB: 0.03, spin: -0.0035, op: 0.88 }
     ];
     for (const spec of layerSpecs) {
       const n = Math.max(200, spec.count);
       const pos = new Float32Array(n * 3);
       const col = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const r = spec.r + (Math.random() - 0.5) * spec.thick;
-        pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-        pos[i * 3 + 1] = r * Math.cos(phi);
-        pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-        /* 纬度极光条纹：明暗交替的色带，让墙面看起来像流动的极光幕 */
-        const band = Math.sin(phi * 6 + Math.sin(theta * 3) * 0.9);
+        const a = Math.random() * Math.PI * 2;
+        const rr = Math.sqrt(Math.random()) * spec.r;
+        const y = Math.cos(a) * rr;
+        const z = Math.sin(a) * rr;
+        pos[i * 3] = (Math.random() - 0.5) * spec.thick * (0.12 + Math.random());
+        pos[i * 3 + 1] = y;
+        pos[i * 3 + 2] = z;
+        /* 极光条纹：多频叠加，纹理更细腻 */
+        const band = Math.sin(a * 7 + rr * 0.0005) * 0.6 + Math.sin(a * 15 + rr * 0.0011) * 0.4;
         const hue = spec.hueA + band * 0.035 + (Math.random() - 0.5) * spec.hueB;
         const light = 0.50 + Math.max(0, band) * 0.40 + Math.random() * 0.08;
         cTmp.setHSL(hue, 0.95, Math.min(0.96, light));
@@ -1413,44 +1539,42 @@
       gammaWall.layers.push({ mesh: pts, mat, spin: spec.spin, baseOp: spec.op });
     }
 
-    /* 2) 极光光带：多圈倾斜大环，缓慢反向旋转，构成风暴的"骨架" */
+    /* 2) 同心能量环：墙面的"骨架"（YZ 平面内的同心圆环） */
     const bandColors = [0x3dffbe, 0x22d3a8, 0x8affff, 0xc8ff5a, 0x4dffd2];
     const bandCount = 7;
     for (let i = 0; i < bandCount; i++) {
-      const br = R * (0.965 + Math.random() * 0.07);
+      const br = R * (0.6 + Math.random() * 0.38);
       const band = new THREE.Mesh(
-        new THREE.TorusGeometry(br, 130 + Math.random() * 260, 6, 128),
+        new THREE.TorusGeometry(br, 120 + Math.random() * 260, 6, 128),
         new THREE.MeshBasicMaterial({
           color: bandColors[i % bandColors.length], transparent: true,
           opacity: 0.16 + Math.random() * 0.12, blending: THREE.AdditiveBlending,
           depthWrite: false, fog: false
         })
       );
-      band.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      band.rotation.y = Math.PI / 2;   // 让圆环落在 YZ 平面
       band.frustumCulled = false;
       group.add(band);
       gammaWall.bands.push({
         mesh: band, mat: band.material,
-        spin: new THREE.Vector3((Math.random() - 0.5) * 0.006, (Math.random() - 0.5) * 0.008, (Math.random() - 0.5) * 0.005),
         baseOp: band.material.opacity, phase: Math.random() * 6.28
       });
     }
 
-    /* 3) 墙面辉光：大范围柔和光斑，强化"发光的天灾之墙"观感 */
+    /* 3) 墙面辉光：大范围柔和光斑，强化"发光的分界墙"观感 */
     const spriteCount = Math.round(26 * q.galaxyMult);
     for (let i = 0; i < spriteCount; i++) {
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+      const rr = Math.sqrt(Math.random()) * R;
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({
         map: GLOW_TEX, color: new THREE.Color().setHSL(0.36 + Math.random() * 0.12, 0.9, 0.6),
         transparent: true, opacity: 0.16 + Math.random() * 0.16,
         blending: THREE.AdditiveBlending, depthWrite: false, fog: false
       }));
-      const rr = R * (0.95 + Math.random() * 0.08);
       sp.position.set(
-        rr * Math.sin(phi) * Math.cos(theta),
-        rr * Math.cos(phi),
-        rr * Math.sin(phi) * Math.sin(theta)
+        (Math.random() - 0.5) * 2600,
+        Math.cos(theta) * rr,
+        Math.sin(theta) * rr
       );
       const ss = 2600 + Math.random() * 4200;
       sp.scale.set(ss, ss, 1);
@@ -1469,36 +1593,22 @@
     return group;
   }
 
-  /* 在玩家朝向的墙面上生成一道伽马闪电：沿球面切线随机游走的折线 */
+  /* 在玩家可见的墙面区域生成一道伽马闪电（沿 YZ 平面随机游走） */
   function spawnGammaBolt(t) {
     const R = GAMMA_WALL_R;
-    const dir = rocketOuter.position.clone();
-    if (dir.lengthSq() < 1) dir.set(0, 0, -1);
-    dir.normalize();
-    /* 在玩家视线方向附近 ±40° 的球面区域起弧，保证玩家看得见 */
-    const tangent = new THREE.Vector3(0, 1, 0);
-    if (Math.abs(dir.dot(tangent)) > 0.9) tangent.set(1, 0, 0);
-    tangent.crossVectors(dir, tangent).normalize();
-    const bitan = new THREE.Vector3().crossVectors(dir, tangent).normalize();
-    const a0 = Math.random() * Math.PI * 2;
-    const spread = (Math.random() - 0.5) * 1.1;
-    const start = dir.clone()
-      .addScaledVector(tangent, Math.cos(a0) * spread)
-      .addScaledVector(bitan, Math.sin(a0) * spread)
-      .normalize();
-
+    const rp = rocketOuter.position;
+    const baseLen = Math.hypot(rp.y, rp.z);
+    const a0 = Math.atan2(rp.z, rp.y) + (Math.random() - 0.5) * 0.9;
+    let rr = Math.max(800, baseLen - R * 0.12 + (Math.random() - 0.5) * R * 0.2);
     const segs = 16 + Math.floor(Math.random() * 14);
     const pts = [];
-    let p = start.clone().multiplyScalar(R);
-    const stepDir = tangent.clone().multiplyScalar(Math.cos(a0)).addScaledVector(bitan, Math.sin(a0)).normalize();
-    pts.push(p.clone());
+    pts.push(new THREE.Vector3((Math.random() - 0.5) * 600, Math.cos(a0) * rr, Math.sin(a0) * rr));
+    let aa = a0;
     for (let i = 0; i < segs; i++) {
-      const wander = new THREE.Vector3()
-        .addScaledVector(stepDir, (0.5 + Math.random() * 0.9) * R * 0.035)
-        .addScaledVector(dir, (Math.random() - 0.5) * R * 0.030)
-        .addScaledVector(bitan, (Math.random() - 0.5) * R * 0.028);
-      p = p.clone().add(wander).normalize().multiplyScalar(R * (0.985 + Math.random() * 0.03));
-      pts.push(p.clone());
+      aa += (Math.random() - 0.5) * 0.13;
+      rr += (Math.random() - 0.5) * R * 0.05;
+      rr = Math.max(200, Math.min(R * 0.985, rr));
+      pts.push(new THREE.Vector3((Math.random() - 0.5) * 700, Math.cos(aa) * rr, Math.sin(aa) * rr));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     const huePick = Math.random();
@@ -1527,28 +1637,24 @@
 
   function updateStormWall(dt, t) {
     if (!gammaWall.group) return;
-    /* 湍流层：整体缓慢自转 + 亮度呼吸 */
+    /* 湍流层：圆盘绕 X 轴缓慢自转 + 亮度呼吸 */
     for (const l of gammaWall.layers) {
-      l.mesh.rotation.y += l.spin * dt * 60 * 0.016;
-      l.mesh.rotation.x += l.spin * dt * 60 * 0.008;
+      l.mesh.rotation.x += l.spin * dt * 60 * 0.016;
       l.mat.opacity = l.baseOp * (0.86 + Math.sin(t * 0.7 + l.spin * 400) * 0.14);
     }
     for (const b of gammaWall.bands) {
-      b.mesh.rotation.x += b.spin.x * dt * 60 * 0.016;
-      b.mesh.rotation.y += b.spin.y * dt * 60 * 0.016;
-      b.mesh.rotation.z += b.spin.z * dt * 60 * 0.016;
       b.mat.opacity = b.baseOp * (0.6 + Math.sin(t * 0.9 + b.phase) * 0.4);
     }
     for (const s of gammaWall.sprites) {
       s.mat.opacity = s.baseOp * (0.55 + Math.sin(t * 1.3 + s.phase) * 0.45);
     }
-    /* 玩家越靠近边界，风暴越狂暴：闪电频率随之上升 */
-    const dWall = Math.abs(GAMMA_WALL_R - rocketOuter.position.length());
-    const rage = THREE.MathUtils.clamp(1 - dWall / 22000, 0, 1);
+    /* 玩家越靠近分界墙，风暴越狂暴：闪电频率随之上升 */
+    const dWall = Math.abs(rocketOuter.position.x - GAMMA_WALL_X);
+    const rage = THREE.MathUtils.clamp(1 - dWall / 20000, 0, 1);
     gammaWall.pulse += (rage - gammaWall.pulse) * (1 - Math.exp(-1.5 * dt));
     gammaWall.boltTimer -= dt;
     if (gammaWall.boltTimer <= 0) {
-      gammaWall.boltTimer = 0.9 - gammaWall.pulse * 0.72 + Math.random() * 0.5;
+      gammaWall.boltTimer = 0.55 - gammaWall.pulse * 0.4 + Math.random() * 0.35;
       const burst = 1 + Math.floor(gammaWall.pulse * 3);
       for (let i = 0; i < burst; i++) spawnGammaBolt(t);
       if (gammaWall.pulse > 0.25) Sound.beacon();
@@ -1579,7 +1685,7 @@
   ================================================================ */
   const HAZARD_CFG = {
     blackHole: { max: 3, spawnEvery: [20, 38], influenceMul: 9, pull: 60, recycle: 9500 },
-    darkStorm: { max: 2, spawnEvery: [24, 44], radius: [170, 320], speed: [38, 92], life: [24, 42] },
+    darkStorm: { max: 2, spawnEvery: [30, 55], radius: [700, 1500], speed: [28, 60], life: [30, 55] },
     gammaBurst: { max: 2, spawnEvery: [28, 52], warn: 2.2, fire: 1.3, len: 7000, radius: 95 },
     oblivionWind: { max: 1, spawnEvery: [90, 150] },
     fixer: { max: 1, spawnEvery: [120, 200] }
@@ -1786,7 +1892,7 @@
     g.position.copy(pos);
     const rc = HAZARD_CFG.darkStorm.radius;
     const R = rc[0] + Math.random() * (rc[1] - rc[0]);
-    const count = Math.max(400, Math.round(1700 * getQuality().galaxyMult));
+    const count = Math.max(800, Math.round(3600 * getQuality().galaxyMult));
     const p2 = new Float32Array(count * 3), col = new Float32Array(count * 3);
     const c = new THREE.Color();
     for (let i = 0; i < count; i++) {
@@ -1802,12 +1908,12 @@
     geo.setAttribute('position', new THREE.BufferAttribute(p2, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     const cloud = new THREE.Points(geo, new THREE.PointsMaterial({
-      size: 10, vertexColors: true, transparent: true, opacity: 0.82,
+      size: Math.max(8, R * 0.012), vertexColors: true, transparent: true, opacity: 0.82,
       blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
     }));
     g.add(cloud);
     /* 精细化：漩涡吸积盘（螺旋暗物质） */
-    const swirlCount = Math.max(200, Math.round(900 * getQuality().galaxyMult));
+    const swirlCount = Math.max(400, Math.round(1800 * getQuality().galaxyMult));
     const sp3 = new Float32Array(swirlCount * 3), scol = new Float32Array(swirlCount * 3);
     for (let i = 0; i < swirlCount; i++) {
       const rr = Math.pow(Math.random(), 0.6) * R * 0.85;
@@ -1822,7 +1928,7 @@
     swirlGeo.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
     swirlGeo.setAttribute('color', new THREE.BufferAttribute(scol, 3));
     const swirl = new THREE.Points(swirlGeo, new THREE.PointsMaterial({
-      size: 7, vertexColors: true, transparent: true, opacity: 0.8,
+      size: Math.max(6, R * 0.008), vertexColors: true, transparent: true, opacity: 0.8,
       blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
     }));
     g.add(swirl);
@@ -1859,8 +1965,8 @@
 
   function spawnDarkStorm() {
     if (darkStorms.length >= HAZARD_CFG.darkStorm.max) return;
-    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 900 + Math.random() * 1500);
-    if (pos.distanceTo(EARTH_POS) < 1200) return;
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 2200 + Math.random() * 2800);
+    if (pos.distanceTo(EARTH_POS) < 2000) return;
     const ds = createDarkStorm(pos);
     ds.maxLife = ds.life;
     darkStorms.push(ds);
@@ -2076,7 +2182,7 @@
       p3[i * 3] = rr * Math.sin(ph) * Math.cos(th);
       p3[i * 3 + 1] = rr * Math.cos(ph) * 0.6;
       p3[i * 3 + 2] = rr * Math.sin(ph) * Math.sin(th);
-      c.setHSL(0.55 + Math.random() * 0.1, 0.8, 0.6 + Math.random() * 0.35);
+      c.setHSL(0.6, 0.06 + Math.random() * 0.10, 0.30 + Math.random() * 0.50);
       c3[i * 3] = c.r; c3[i * 3 + 1] = c.g; c3[i * 3 + 2] = c.b;
     }
     const geo = new THREE.BufferGeometry();
@@ -2087,11 +2193,13 @@
       blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
     }));
     g.add(mist);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x9aa0ab, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(R * 2.6, R * 2.6, 1); g.add(halo);
     const eye = new THREE.Mesh(new THREE.SphereGeometry(R * 0.14, 16, 12),
-      new THREE.MeshBasicMaterial({ color: 0xeaf6ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      new THREE.MeshBasicMaterial({ color: 0xd3d7de, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
     g.add(eye);
     scene.add(g);
-    return { group: g, mist, eye, R, position: pos.clone(), vel: randomUnitVector().multiplyScalar(30 + Math.random() * 40), spin: (Math.random() - 0.5) * 0.4 };
+    return { group: g, mist, halo, eye, R, position: pos.clone(), vel: randomUnitVector().multiplyScalar(30 + Math.random() * 40), spin: (Math.random() - 0.5) * 0.4 };
   }
   function spawnOblivionWind() {
     if (oblivionWinds.length >= HAZARD_CFG.oblivionWind.max) return;
@@ -2291,90 +2399,74 @@
   const rocketOuter = new THREE.Group();
   const rocketInner = new THREE.Group();
 
-  const matWhite = new THREE.MeshStandardMaterial({ color: 0xf2f4fa, roughness: 0.34, metalness: 0.30 });
-  const matBody = new THREE.MeshStandardMaterial({ map: ROCKET_BODY_TEX, roughness: 0.38, metalness: 0.25 });
-  const matShield = new THREE.MeshStandardMaterial({ map: HEAT_SHIELD_TEX, roughness: 0.9, metalness: 0.12 });
-  const matRed = new THREE.MeshStandardMaterial({ color: 0xd92d20, roughness: 0.42, metalness: 0.20 });
-  const matDark = new THREE.MeshStandardMaterial({ color: 0x252a35, roughness: 0.55, metalness: 0.60 });
-  const matMetal = new THREE.MeshStandardMaterial({ color: 0xa8b0c0, roughness: 0.22, metalness: 0.92 });
-  const matGlass = new THREE.MeshStandardMaterial({
-    color: 0x33aaff, emissive: 0x1155aa, emissiveIntensity: 0.6, roughness: 0.10, metalness: 0.25
-  });
-  const matFlame = new THREE.MeshStandardMaterial({
-    color: 0xffaa22, emissive: 0xff5510, emissiveIntensity: 1.0, transparent: true, opacity: 0.92
-  });
+  const matHull = new THREE.MeshStandardMaterial({ color: 0x2a3140, roughness: 0.30, metalness: 0.88 });
+  const matHull2 = new THREE.MeshStandardMaterial({ color: 0x39445a, roughness: 0.26, metalness: 0.82 });
+  const matTrim = new THREE.MeshStandardMaterial({ color: 0x16d6ee, emissive: 0x0a6a7a, emissiveIntensity: 0.8, roughness: 0.22, metalness: 0.70 });
+  const matSteel = new THREE.MeshStandardMaterial({ color: 0xc0ccdc, roughness: 0.18, metalness: 0.95 });
+  const matDark = new THREE.MeshStandardMaterial({ color: 0x11151f, roughness: 0.4, metalness: 0.7 });
+  const matCanopy = new THREE.MeshStandardMaterial({ color: 0x7fe8ff, emissive: 0x0a5a80, emissiveIntensity: 1.0, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.85 });
+  const matEngine = new THREE.MeshStandardMaterial({ color: 0x7fe8ff, emissive: 0x22aaff, emissiveIntensity: 1.6, roughness: 0.2, metalness: 0.4 });
+  const matFlame = new THREE.MeshStandardMaterial({ color: 0x55ccff, emissive: 0x1188ff, emissiveIntensity: 1.2, transparent: true, opacity: 0.92 });
   const matWarp = new THREE.MeshBasicMaterial({
     color: 0x7cc0ff, transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, depthWrite: false
   });
 
-  const CORE_R = 0.50, CORE_H = 3.20;
-  const CORE_BOTTOM = -CORE_H / 2, CORE_TOP = CORE_H / 2;
+  const HULL_R = 0.46, HULL_TOP = 1.5, HULL_BOTTOM = -2.1;
+  const CORE_R = HULL_R, CORE_H = HULL_TOP - HULL_BOTTOM;
+  const CORE_BOTTOM = HULL_BOTTOM, CORE_TOP = HULL_TOP;
 
-  rocketInner.add(new THREE.Mesh(new THREE.CylinderGeometry(CORE_R, CORE_R, CORE_H, 24), matBody));
-  [-1.10, 0.10, 1.05].forEach(y => {
-    const ring = new THREE.Mesh(
-      new THREE.CylinderGeometry(CORE_R + 0.012, CORE_R + 0.012, 0.05, 20), matRed
-    );
-    ring.position.y = y; rocketInner.add(ring);
+  /* 主船体：流线型机械飞船 */
+  const hull = new THREE.Mesh(new THREE.CylinderGeometry(HULL_R * 0.70, HULL_R, CORE_H, 20), matHull);
+  hull.position.y = (HULL_TOP + HULL_BOTTOM) / 2;
+  rocketInner.add(hull);
+  const hullUpper = new THREE.Mesh(new THREE.CylinderGeometry(HULL_R * 0.34, HULL_R * 0.70, 1.3, 20), matHull2);
+  hullUpper.position.y = HULL_TOP - 0.55;
+  rocketInner.add(hullUpper);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(HULL_R * 0.32, 0.9, 16), matHull2);
+  nose.position.y = HULL_TOP + 0.5;
+  rocketInner.add(nose);
+  /* 发光座舱 */
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.20, 12, 10), matCanopy);
+  canopy.position.set(0, HULL_TOP - 0.35, HULL_R * 0.72);
+  canopy.scale.set(1.15, 1.7, 0.7);
+  rocketInner.add(canopy);
+  /* 青色环绕灯带 */
+  [-1.7, -0.6, 0.5].forEach(y => {
+    const trim = new THREE.Mesh(new THREE.TorusGeometry(HULL_R + 0.015, 0.035, 6, 20), matTrim);
+    trim.position.y = y; trim.rotation.x = Math.PI / 2;
+    rocketInner.add(trim);
   });
-  const FAIRING_H = 1.10;
-  const fairing = new THREE.Mesh(new THREE.ConeGeometry(CORE_R, FAIRING_H, 24), matBody);
-  fairing.position.y = CORE_TOP + FAIRING_H / 2;
-  rocketInner.add(fairing);
-  const fairingRing = new THREE.Mesh(
-    new THREE.CylinderGeometry(CORE_R + 0.015, CORE_R + 0.015, 0.06, 20), matRed
-  );
-  fairingRing.position.y = CORE_TOP + 0.01;
-  rocketInner.add(fairingRing);
-  const ESC_BASE = CORE_TOP + FAIRING_H;
-  const escBase = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.12, 12), matRed);
-  escBase.position.y = ESC_BASE + 0.06; rocketInner.add(escBase);
-  const escPole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.10, 0.42, 8), matWhite);
-  escPole.position.y = ESC_BASE + 0.12 + 0.21; rocketInner.add(escPole);
-  const escTip = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.18, 8), matRed);
-  escTip.position.y = ESC_BASE + 0.12 + 0.42 + 0.09; rocketInner.add(escTip);
-
-  const BOOSTER_R = 0.26, BOOSTER_H = 2.10;
-  const BOOSTER_DIST = CORE_R + BOOSTER_R + 0.02, BOOSTER_CY = -0.20;
-  [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(a => {
-    const bx = Math.cos(a) * BOOSTER_DIST, bz = Math.sin(a) * BOOSTER_DIST;
-    const booster = new THREE.Mesh(new THREE.CylinderGeometry(BOOSTER_R, BOOSTER_R, BOOSTER_H, 16), matBody);
-    booster.position.set(bx, BOOSTER_CY, bz); rocketInner.add(booster);
-    const bRing = new THREE.Mesh(new THREE.CylinderGeometry(BOOSTER_R + 0.012, BOOSTER_R + 0.012, 0.05, 12), matRed);
-    bRing.position.set(bx, BOOSTER_CY + 0.55, bz); rocketInner.add(bRing);
-    const bNose = new THREE.Mesh(new THREE.ConeGeometry(BOOSTER_R, 0.45, 12), matRed);
-    bNose.position.set(bx, BOOSTER_CY + BOOSTER_H / 2 + 0.225, bz); rocketInner.add(bNose);
-    const bNozzle = new THREE.Mesh(new THREE.CylinderGeometry(BOOSTER_R * 0.62, BOOSTER_R * 0.88, 0.30, 10), matDark);
-    bNozzle.position.set(bx, BOOSTER_CY - BOOSTER_H / 2 - 0.15, bz); rocketInner.add(bNozzle);
+  /* 后掠机械翼 */
+  const wingShape = new THREE.Shape();
+  wingShape.moveTo(0, 0); wingShape.lineTo(1.05, -0.15); wingShape.lineTo(1.28, -0.55);
+  wingShape.lineTo(0, -0.5); wingShape.closePath();
+  const wingGeo = new THREE.ExtrudeGeometry(wingShape, { depth: 0.05, bevelEnabled: false });
+  [-1, 1].forEach(side => {
+    const wing = new THREE.Mesh(wingGeo, matHull2);
+    wing.position.set(side * HULL_R, -0.85, 0);
+    wing.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+    rocketInner.add(wing);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), matTrim);
+    tip.position.set(side * 1.62, -1.1, 0);
+    rocketInner.add(tip);
   });
-
-  const coreNozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.46, 0.45, 16), matDark);
-  coreNozzle.position.y = CORE_BOTTOM - 0.225; rocketInner.add(coreNozzle);
-
-  const heatShield = new THREE.Mesh(new THREE.CylinderGeometry(CORE_R + 0.02, CORE_R + 0.06, 1.0, 24), matShield);
-  heatShield.position.y = CORE_BOTTOM - 0.35; rocketInner.add(heatShield);
-
-  const rcsMat = new THREE.MeshStandardMaterial({ color: 0x8a94a6, roughness: 0.3, metalness: 0.85 });
-  [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(a => {
-    const rcs = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.12), rcsMat);
-    rcs.position.set(Math.cos(a) * (CORE_R + 0.04), 1.05, Math.sin(a) * (CORE_R + 0.04));
-    rocketInner.add(rcs);
+  /* 尾翼 */
+  [-1, 1].forEach(side => {
+    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 0.55), matHull2);
+    tail.position.set(side * 0.5, -1.7, 0);
+    tail.rotation.z = side * 0.35;
+    rocketInner.add(tail);
   });
-
-  const finShape = new THREE.Shape();
-  finShape.moveTo(0, 0); finShape.lineTo(0.52, -0.30); finShape.lineTo(0.58, -0.68);
-  finShape.lineTo(0, -0.55); finShape.lineTo(0, 0);
-  const finGeo = new THREE.ExtrudeGeometry(finShape, { depth: 0.06, bevelEnabled: false });
-  [Math.PI / 4, 3 * Math.PI / 4, 5 * Math.PI / 4, 7 * Math.PI / 4].forEach(a => {
-    const fin = new THREE.Mesh(finGeo, matWhite);
-    fin.position.set(Math.cos(a) * CORE_R, -1.05, Math.sin(a) * CORE_R);
-    fin.rotation.y = -a; rocketInner.add(fin);
+  /* 引擎舱 × 2 */
+  [-1, 1].forEach(side => {
+    const nacelle = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.21, 1.3, 12), matHull);
+    nacelle.position.set(side * 0.34, -1.95, 0);
+    rocketInner.add(nacelle);
+    const nacelleGlow = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.19, 0.28, 12), matEngine);
+    nacelleGlow.position.set(side * 0.34, -2.62, 0);
+    rocketInner.add(nacelleGlow);
   });
-
-  const win = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 8), matGlass);
-  win.position.set(CORE_R + 0.01, 0.70, 0); win.scale.set(0.42, 1, 1);
-  rocketInner.add(win);
 
   const warpRings = [];
   [0.3, -0.3, -1.0].forEach(y => {
@@ -2411,8 +2503,8 @@
   navR.position.set(CORE_R + 0.05, 0.4, 0); rocketInner.add(navR);
   const navW = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 2.0 }));
   navW.position.set(0, 0.4, -(CORE_R + 0.05)); rocketInner.add(navW);
-  const engineGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x66bbff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
-  engineGlow.scale.set(1.4, 1.4, 1); engineGlow.position.y = CORE_BOTTOM - 0.9; rocketInner.add(engineGlow);
+  const engineGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x22aaff, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false }));
+  engineGlow.scale.set(1.6, 1.6, 1); engineGlow.position.y = CORE_BOTTOM - 1.1; rocketInner.add(engineGlow);
 
   /* 引力锚 buff 光环（引力锚生效时环绕飞船旋转） */
   const anchorRing = new THREE.Group();
@@ -2636,7 +2728,7 @@
     const gmult = getQuality().galaxyMult;
     let count, armCount, spinTurns, thickness, coreRatio;
     if (type === 'spiral') {
-      count = Math.round(400 * gmult); armCount = 2 + Math.floor(srand() * 2);
+      count = Math.round(650 * gmult); armCount = 2 + Math.floor(srand() * 2);
       spinTurns = 1.8 + srand() * 1.2; thickness = 0.08; coreRatio = 0.15;
     } else if (type === 'elliptical') {
       count = Math.round(350 * gmult); armCount = 0; spinTurns = 0;
@@ -2706,6 +2798,14 @@
     const gs = radius * 0.6;
     coreGlow.scale.set(gs, gs, 1);
     group.add(coreGlow);
+    /* 星云晕：深邃的弥散光晕，营造宇宙寂静感 */
+    const nebula = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: theme.outer, transparent: true, opacity: 0.20,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    const ns = radius * 2.7;
+    nebula.scale.set(ns, ns * 0.66, 1);
+    group.add(nebula);
     return group;
   }
 
@@ -2754,7 +2854,8 @@
         rimColor: new THREE.Color(theme.env.rimColor), rimIntensity: theme.env.rimIntensity,
         warmColor: new THREE.Color(theme.env.warmColor), warmIntensity: theme.env.warmIntensity
       },
-      influenceR: radius * 2.5 + 1500
+      influenceR: radius * 2.5 + 1500,
+      richness: 0.25 + srand() * 0.75
     });
   }
 
@@ -3159,43 +3260,54 @@
         side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
       })
     );
+    /* 大气辉光：星球边缘的弥散光晕 */
+    const atmoGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: type.color, transparent: true, opacity: 0.16,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    atmoGlow.scale.set(radius * 3.2, radius * 3.2, 1);
     const ecoGroup = new THREE.Group();
     ecoGroup.add(type.ecoMaker(radius));
     const group = new THREE.Group();
-    group.add(sphere); group.add(atmo); group.add(ecoGroup);
+    group.add(sphere); group.add(atmo); group.add(atmoGlow); group.add(ecoGroup);
     /* 随机自然星环 / 小行星带（无文明星球也可能拥有） */
     let ringRef = null, beltRef = null;
     if (srand() < 0.22) {
       const ringGroup = new THREE.Group();
       const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(radius * 1.6, radius * 0.07, 8, 72),
-        new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.8, metalness: 0.15, transparent: true, opacity: 0.65 })
+        new THREE.TorusGeometry(radius * 1.6, radius * 0.07, 8, 96),
+        new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.8, metalness: 0.15, transparent: true, opacity: 0.7 })
       );
       ringGroup.add(ring);
-      /* 星环粒子尘埃 */
-      const dustCount = Math.floor(120 + srand() * 120);
-      const dpos = new Float32Array(dustCount * 3);
+      /* 星环粒子尘埃（更密、多色） */
+      const dustCount = Math.floor(260 + srand() * 240);
+      const dpos = new Float32Array(dustCount * 3), dcol = new Float32Array(dustCount * 3);
+      const dc = new THREE.Color(type.color);
       for (let i = 0; i < dustCount; i++) {
         const a = srand() * Math.PI * 2;
         const r = radius * (1.42 + srand() * 0.46);
         dpos[i * 3] = Math.cos(a) * r;
         dpos[i * 3 + 1] = (srand() - 0.5) * radius * 0.06;
         dpos[i * 3 + 2] = Math.sin(a) * r;
+        dc.setHSL((type.hue || 30) / 360, 0.3, 0.55 + srand() * 0.35);
+        dcol[i * 3] = dc.r; dcol[i * 3 + 1] = dc.g; dcol[i * 3 + 2] = dc.b;
       }
       const dustGeo = new THREE.BufferGeometry();
       dustGeo.setAttribute('position', new THREE.BufferAttribute(dpos, 3));
-      const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.8, color: type.color, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+      dustGeo.setAttribute('color', new THREE.BufferAttribute(dcol, 3));
+      const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.9, vertexColors: true, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false }));
       ringGroup.add(dust);
       ringGroup.rotation.x = Math.PI / 2.2 + (srand() - 0.5) * 0.5;
       group.add(ringGroup);
       ringRef = ringGroup;
     } else if (srand() < 0.32) {
       const belt = new THREE.Group();
-      const beltCount = Math.floor(50 + srand() * 40);
+      const beltCount = Math.floor(110 + srand() * 90);
+      const rockColors = [0x9a8a7a, 0x8a7a6a, 0xa89888, 0x7a6a5a, 0xb0a090, 0x6a5a4a];
       for (let i = 0; i < beltCount; i++) {
         const rock = new THREE.Mesh(
-          new THREE.OctahedronGeometry(0.8 + srand() * 2.2, 0),
-          new THREE.MeshStandardMaterial({ color: 0x9a8a7a, roughness: 0.95 })
+          new THREE.OctahedronGeometry(0.6 + srand() * 2.8, 0),
+          new THREE.MeshStandardMaterial({ color: rockColors[Math.floor(srand() * rockColors.length)], roughness: 0.95 })
         );
         const a = (i / beltCount) * Math.PI * 2 + srand() * 0.3;
         const r = radius * 1.8 + srand() * radius * 0.5;
@@ -3216,10 +3328,13 @@
       name: uniqueName(typeKey),
       rotationSpeed: 0.05 + Math.random() * 0.15,
       ecoVisible: false, civilization: null,
-      ring: ringRef, belt: beltRef
+      ring: ringRef, belt: beltRef,
+      richness: (nearestG && nearestG.richness != null) ? nearestG.richness : 0.5
     };
     celestialBodies.push(body);
-    maybeAddCivilization(body);
+    /* 分界墙划分：x>GAMMA_WALL_X 为文明发展地，x<GAMMA_WALL_X 为星空矿场 */
+    if (pos.x > GAMMA_WALL_X) maybeAddCivilization(body);
+    else maybeAddMine(body);
   }
   function disposeBody(body) {
     if (body.civilization) {
@@ -3377,6 +3492,108 @@
   };
   function generateCivName(civKey) {
     return CIV_NAME_PARTS[civKey][Math.floor(srand() * CIV_NAME_PARTS[civKey].length)] + '文明';
+  }
+
+  /* ================================================================
+     宇宙种族：基于「物质」程序化生成 10000 个种族（可接触）
+   ================================================================ */
+  const RACE_MATERIALS = ['碳', '硅', '等离子', '能量', '冰晶', '水', '金属', '晶体', '真菌', '植物', '甲壳', '暗物质', '伽马', '引力', '光子', '气体', '岩石', '磁'];
+  const RACE_SUFFIX = ['族', '裔', '民', '灵', '体', '群', '部落', '帝国', '联邦', '氏族'];
+  const RACE_BASE_KEYS = Object.keys(CIV_TYPES);
+  function hashSeed(n) {
+    let h = n ^ 0x9E3779B9;
+    h = Math.imul(h ^ h >>> 16, 0x85EBCA6B);
+    h = Math.imul(h ^ h >>> 13, 0xC2B2AE35);
+    return (h ^ h >>> 16) >>> 0;
+  }
+  function mulberry(seed) {
+    let t = seed >>> 0;
+    return function () {
+      t += 0x6D2B79F5;
+      let x = t;
+      x = Math.imul(x ^ x >>> 15, x | 1);
+      x ^= x + Math.imul(x ^ x >>> 7, x | 61);
+      return ((x ^ x >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const SPECIAL_RACES = [
+    { name: '玻色族', baseType: 'energy', dev: 0.99 },
+    { name: '硅基', baseType: 'silicon', dev: 0.97 },
+    { name: '暗宙体', baseType: 'void', dev: 0.95 },
+    { name: '星云体', baseType: 'photon', dev: 0.93 },
+    { name: '意念族', baseType: 'gravitic', dev: 0.91 },
+    { name: '伽马体', baseType: 'gamma', dev: 0.89 },
+    { name: '行星一族', baseType: 'carbon', dev: 0.87 },
+    { name: '泰坦族', baseType: 'hive', dev: 0.85 },
+    { name: '引力一族', baseType: 'gravitic', dev: 0.83 },
+    { name: '虫族', baseType: 'hive', dev: 0.81 }
+  ];
+  const ALL_RACES = [];
+  for (let i = 0; i < 10000; i++) {
+    const rnd = mulberry(hashSeed(i * 7919 + 13));
+    const m1 = RACE_MATERIALS[Math.floor(rnd() * RACE_MATERIALS.length)];
+    const m2 = RACE_MATERIALS[Math.floor(rnd() * RACE_MATERIALS.length)];
+    const sfx = RACE_SUFFIX[Math.floor(rnd() * RACE_SUFFIX.length)];
+    ALL_RACES.push({ name: m1 + m2 + sfx, baseType: RACE_BASE_KEYS[Math.floor(rnd() * RACE_BASE_KEYS.length)], dev: rnd() });
+  }
+  /* 排名：前 10 特殊种族 + 程序化种族按发展度排序（前 100 名） */
+  const RACE_RANKINGS = [];
+  for (const s of SPECIAL_RACES) RACE_RANKINGS.push({ rank: RACE_RANKINGS.length + 1, ...s });
+  const sortedRest = ALL_RACES.slice().sort((a, b) => b.dev - a.dev);
+  for (let i = 0; i < 90; i++) RACE_RANKINGS.push({ rank: RACE_RANKINGS.length + 1, ...sortedRest[i] });
+  function raceDistribution(rank) { return Math.max(0, (11 - rank)) / 55; }
+  function pickRaceName(baseType) {
+    const idx = Math.floor(srand() * ALL_RACES.length);
+    for (let i = 0; i < 10000; i++) {
+      const r = ALL_RACES[(idx + i) % 10000];
+      if (r.baseType === baseType) return r.name;
+    }
+    return generateCivName(baseType);
+  }
+  function pickMineMaster() {
+    const r = RACE_RANKINGS[Math.floor(srand() * 100)];
+    return r || RACE_RANKINGS[0];
+  }
+  let competitionTimer = 1440; // 24 游戏小时 = 24 现实分钟
+  let raceUIAcc = 0;
+  function runRaceCompetition() {
+    RACE_RANKINGS.sort((a, b) => b.score - a.score);
+    RACE_RANKINGS.forEach((r, i) => r.rank = i + 1);
+    const top = RACE_RANKINGS.slice(0, 3);
+    showToast('🏆 比赛结束！冠军：' + top[0].name + ' · 亚军：' + top[1].name + ' · 季军：' + top[2].name);
+    Sound.beacon();
+    for (const r of RACE_RANKINGS) r.score = 0;
+    updateRaceUI();
+  }
+  function updateRaceSim(dt) {
+    for (const r of RACE_RANKINGS) r.score = (r.score || 0) + (r.dev * 0.06 + Math.random() * 0.02) * dt;
+    raceUIAcc += dt;
+    if (raceUIAcc > 0.5) {
+      raceUIAcc = 0;
+      RACE_RANKINGS.sort((a, b) => b.score - a.score);
+      RACE_RANKINGS.forEach((r, i) => r.rank = i + 1);
+      updateRaceUI();
+    }
+  }
+  function updateRaceUI() {
+    const panel = document.getElementById('racePanel');
+    if (!panel) return;
+    if (!state.running) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const timerEl = document.getElementById('raceTimer');
+    const barEl = document.getElementById('raceBar');
+    const listEl = document.getElementById('raceRankList');
+    const remaining = Math.max(0, competitionTimer);
+    const mm = Math.floor(remaining / 60), ss = Math.floor(remaining % 60);
+    if (timerEl) timerEl.textContent = '进行中 · ' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+    if (barEl) barEl.style.width = ((1 - remaining / 1440) * 100).toFixed(1) + '%';
+    if (listEl) {
+      let html = '';
+      for (const r of RACE_RANKINGS.slice(0, 5)) {
+        html += '<div style="display:flex;justify-content:space-between;"><span>' + r.rank + '. ' + r.name + '</span><span>' + Math.floor(r.score) + '</span></div>';
+      }
+      listEl.innerHTML = html;
+    }
   }
 
   const CIV_GEO = {
@@ -4555,6 +4772,17 @@
       '有人说，大寂静是一场"筛选"——只有学会倾听彼此的生命，才能听见方舟的回响。'
     ];
     lines.push({ tag: '大寂静', text: LORE_LINES[Math.floor(Math.random() * LORE_LINES.length)] });
+    if (!civ.isEarth && civ.disposition !== 'hostile') {
+      lines.push({
+        tag: '选择',
+        text: '你想如何与这个文明相处？',
+        choices: [
+          { text: '「我愿意分享知识与技术，助你们繁荣。」', karma: 1, gift: 'tech' },
+          { text: '「请教我你们种族的独特能力。」', karma: 0, gift: 'skill' },
+          { text: '「我只是一个观察者，安静地路过。」', karma: 0, gift: 'observe' }
+        ]
+      });
+    }
     if (civ.isEarth) {
       lines.push({ tag: '联邦议会', text: '「欢迎回到地球，播种者之子。人类联邦的议员们正等着听取你的星际汇报。」' });
       lines.push({ tag: '汇报', text: '你汇报了这趟旅程：接触了 ' + NARRATIVE.lifeFormsFound.size + ' 种生命，收集了 ' + NARRATIVE.greetings.size + ' 种问候，' +
@@ -4648,7 +4876,8 @@
 
   /* ---------------- 文明创建 ---------------- */
   function maybeAddCivilization(body) {
-    const chance = CIV_SPAWN_CHANCE[body.type] || 0;
+    const richness = body.richness != null ? body.richness : 0.5;
+    const chance = (CIV_SPAWN_CHANCE[body.type] || 0) * (0.35 + richness * 1.3);
     if (srand() > chance) return;
     const possible = CIV_TYPE_BY_BODY[body.type];
     if (!possible) return;
@@ -4656,7 +4885,8 @@
     const disposition = pickDisposition(civKey);
     const civType = CIV_TYPES[civKey];
     const dFromEarth = body.position.distanceTo(EARTH_POS);
-    const devLevel = pickDevLevel(dFromEarth);
+    const richnessBoost = richness > 0.75 ? 1 : (richness < 0.3 ? -1 : 0);
+    const devLevel = Math.max(0, Math.min(4, pickDevLevel(dFromEarth) + richnessBoost));
     const devInfo = CIV_DEV_LEVELS[devLevel];
 
     const markerGroup = new THREE.Group();
@@ -4832,7 +5062,7 @@
     const civ = {
       type: civKey, typeInfo: civType,
       devLevel: devLevel, devInfo: devInfo,
-      name: generateCivName(civKey),
+      name: pickRaceName(civKey),
       hostBody: body,
       marker: markerGroup,
       core, haloRings, sprite,
@@ -4854,8 +5084,478 @@
       isEarth: false,
       lastVisibleState: null
     };
+    createCivEcology(civ, surfaceGroup);
     body.civilization = civ;
     civilizations.push(civ);
+  }
+
+  /* —— 文明星球生态动画（植物摇曳 + 小动物漫步 + 萤火虫） —— */
+  function createCivEcology(civ, surfaceGroup) {
+    const ecoGroup = new THREE.Group();
+    const col = civ.typeInfo.color;
+    const plants = [], creatures = [], fireflies = [];
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 14 + Math.random() * 26;
+      const plant = new THREE.Group();
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.8 + Math.random() * 1.5, 5), new THREE.MeshStandardMaterial({ color: 0x3a7a4a, emissive: 0x0a2a12, emissiveIntensity: 0.4, roughness: 0.7 }));
+      stem.position.y = 0.9; plant.add(stem);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.35 + Math.random() * 0.25, 8, 6), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+      head.position.y = 1.9 + Math.random() * 0.8; plant.add(head);
+      plant.position.set(Math.cos(a) * r, (Math.random() - 0.5) * 1.2, Math.sin(a) * r);
+      plant.rotation.z = (Math.random() - 0.5) * 0.4;
+      ecoGroup.add(plant);
+      plants.push({ mesh: plant, baseRot: plant.rotation.z, phase: Math.random() * 6.28 });
+    }
+    for (let i = 0; i < 5; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 18 + Math.random() * 20;
+      const critter = new THREE.Mesh(new THREE.OctahedronGeometry(0.4, 0), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+      critter.position.set(Math.cos(a) * r, 0.3, Math.sin(a) * r);
+      ecoGroup.add(critter);
+      creatures.push({ mesh: critter, home: new THREE.Vector3(critter.position.x, 0.3, critter.position.z), target: new THREE.Vector3(critter.position.x, 0.3, critter.position.z), speed: 0.8 + Math.random() * 1.2, timer: 0, phase: Math.random() * 6.28 });
+    }
+    for (let i = 0; i < 14; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 15 + Math.random() * 25;
+      const ff = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: col, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      ff.scale.set(1.4, 1.4, 1);
+      ff.position.set(Math.cos(a) * r, 1 + Math.random() * 3, Math.sin(a) * r);
+      ecoGroup.add(ff);
+      fireflies.push({ sp: ff, a, r, y: ff.position.y, phase: Math.random() * 6.28 });
+    }
+    surfaceGroup.add(ecoGroup);
+    civ.ecology = { group: ecoGroup, plants, creatures, fireflies };
+  }
+  function updateCivEcology(civ, dt, t) {
+    const e = civ.ecology;
+    if (!e) return;
+    for (const p of e.plants) p.mesh.rotation.z = p.baseRot + Math.sin(t * 1.4 + p.phase) * 0.12;
+    for (const c of e.creatures) {
+      c.timer -= dt;
+      if (c.timer <= 0) {
+        c.timer = 2 + Math.random() * 3;
+        c.target.set(c.home.x + (Math.random() - 0.5) * 8, 0.3, c.home.z + (Math.random() - 0.5) * 8);
+      }
+      const dx = c.target.x - c.mesh.position.x, dz = c.target.z - c.mesh.position.z;
+      const d = Math.hypot(dx, dz);
+      if (d > 0.3) { c.mesh.position.x += dx / d * c.speed * dt; c.mesh.position.z += dz / d * c.speed * dt; c.mesh.rotation.y += dt * 3; }
+      c.mesh.position.y = 0.3 + Math.sin(t * 2 + c.phase) * 0.15;
+    }
+    for (const f of e.fireflies) {
+      f.a += dt * 0.4;
+      f.sp.position.x = Math.cos(f.a) * f.r;
+      f.sp.position.z = Math.sin(f.a) * f.r;
+      f.sp.position.y = f.y + Math.sin(t * 1.6 + f.phase) * 1.2;
+      f.sp.material.opacity = 0.5 + Math.sin(t * 3 + f.phase) * 0.4;
+    }
+  }
+  const ECO_DESCRIPTIONS = {
+    carbon: '高大的蕨类与发光藤蔓在微风中摇曳，小型食草生物在林间穿行，萤火般的孢子缓缓升腾。',
+    silicon: '晶体植物在光线下折射出七彩棱光，晶簇间有细小的机械生物爬行，仿佛活着的水晶。',
+    plasma: '等离子藤蔓如火焰般舞动，灼热的气态生物在熔岩裂缝间游走，日珥般的花火不时绽放。',
+    energy: '纯能量构成的植物如光带般流动，闪烁的量子生命体在空中悬浮、聚合又散开。',
+    ice: '冰晶树在极光下折射蓝光，耐寒的小兽在雪原上留下足迹，霜花在呼吸间缓缓生长。',
+    mechanical: '金属植物规律地转动叶片，微型无人机群如蜂群般巡游，电路如藤蔓般蔓延。',
+    aquatic: '珊瑚与海草随洋流摇曳，发光的鱼群与浮游生物在深蓝中划出流光。',
+    fungal: '巨大的菌伞如伞盖般张开，孢子如金雾飘散，菌丝在腐木上闪烁着微光。',
+    floral: '漫山遍野的花海在风中泛起涟漪，花粉如星尘般飞舞，蝴蝶般的生物穿梭其间。',
+    hive: '生物质结构如蜂巢般密布，工蜂生物忙碌穿梭，信息素在空中交织成可见的网。',
+    void: '暗物质植物如影般摇曳，幽暗的生命体在阴影中若隐若现，吞噬着微弱的光。',
+    gamma: '辐射植物闪烁着诡异的绿光，高能生命体如闪电般窜动，空气中弥漫着电离的火花。',
+    gravitic: '植物在失重的引力场中缓缓旋转，扭曲空间的生物如透镜般折射星空。',
+    photon: '光构成的植物如极光般流动，光子生命体如流星般划过，绽放出七彩的尾迹。'
+  };
+  function viewEcology(civ) {
+    const ov = document.getElementById('ecoView');
+    if (!ov) return;
+    document.getElementById('ecoTitle').textContent = '🌿 生态观察 · ' + civ.name;
+    document.getElementById('ecoText').textContent = ECO_DESCRIPTIONS[civ.type] || '这里生活着独特的生命形态，在各自的生态位中繁衍生息。';
+    ov.style.display = '';
+    Sound.dialogue();
+  }
+
+  /* ---------------- 星空矿场（矿球 + 多族矿奴） ---------------- */
+  const MINE_SPAWN_CHANCE = { rocky: 0.3, ice: 0.18, lava: 0.35, terran: 0.08, ocean: 0.05, gas: 0.03 };
+  const MINE_SLAVE_TYPES = {
+    rocky: ['silicon', 'mechanical', 'hive', 'gravitic', 'fungal'],
+    ice: ['ice', 'silicon', 'aquatic'],
+    lava: ['plasma', 'gamma', 'energy'],
+    terran: ['carbon', 'floral', 'fungal'],
+    ocean: ['aquatic', 'carbon'],
+    gas: ['energy', 'void']
+  };
+
+  function maybeAddMine(body) {
+    if (body.civilization) return;
+    const chance = MINE_SPAWN_CHANCE[body.type] || 0;
+    if (srand() > chance) return;
+    const slaveTypes = MINE_SLAVE_TYPES[body.type];
+    if (!slaveTypes) return;
+    const raceCount = Math.min(3, 2 + Math.floor(srand() * 2));
+    const races = [];
+    const pool = slaveTypes.slice();
+    for (let i = 0; i < raceCount && pool.length; i++) {
+      races.push(pool.splice(Math.floor(srand() * pool.length), 1)[0]);
+    }
+    /* 矿场工业设施（环绕行星） */
+    const mineMat = new THREE.MeshStandardMaterial({ color: 0xb8863a, emissive: 0x5a3a10, emissiveIntensity: 0.45, roughness: 0.7, metalness: 0.55, transparent: true, opacity: 0.92 });
+    for (let i = 0; i < 5; i++) {
+      const factory = new THREE.Mesh(new THREE.BoxGeometry(body.radius * 0.32, body.radius * 0.14, body.radius * 0.26), mineMat);
+      const a = (i / 5) * Math.PI * 2;
+      factory.position.set(Math.cos(a) * body.radius * 1.35, (srand() - 0.5) * body.radius * 0.5, Math.sin(a) * body.radius * 1.35);
+      factory.rotation.y = -a;
+      body.group.add(factory);
+    }
+    /* 矿奴 + 监管者 */
+    const master = pickMineMaster();
+    const masterPos = body.position.clone().addScaledVector(randomUnitVector(), 3000 + srand() * 5000);
+    if (masterPos.x > GAMMA_WALL_X) masterPos.x = GAMMA_WALL_X - Math.abs(masterPos.x - GAMMA_WALL_X);
+    const slaveGroup = new THREE.Group();
+    slaveGroup.position.copy(body.position);
+    slaveGroup.visible = false;
+    scene.add(slaveGroup);
+    body.mine = {
+      races, slaveGroup, slaves: [], overseers: [],
+      master, masterPos, depleted: false, regenTimer: 0
+    };
+    spawnMineWorkers(body);
+    createMasterBase(body.mine, body);
+  }
+
+  function spawnMineWorkers(body) {
+    const m = body.mine;
+    m.slaves = [];
+    m.overseers = [];
+    while (m.slaveGroup.children.length) m.slaveGroup.remove(m.slaveGroup.children[0]);
+    for (const race of m.races) {
+      const n = 2 + Math.floor(srand() * 3);
+      for (let i = 0; i < n; i++) {
+        const h = createCivInhabitant(race, CIV_TYPES[race].color);
+        const a = Math.random() * Math.PI * 2;
+        const r = body.radius + 1.5 + Math.random() * 5;
+        h.position.set(Math.cos(a) * r, (Math.random() - 0.3) * 1.5, Math.sin(a) * r);
+        h.userData.phase = Math.random() * 6.28;
+        h.userData.baseY = h.position.y;
+        m.slaveGroup.add(h);
+        m.slaves.push(h);
+      }
+    }
+    for (let i = 0; i < 2; i++) {
+      const ov = createCivInhabitant(m.master.baseType, CIV_TYPES[m.master.baseType].color);
+      ov.scale.setScalar(1.4);
+      const a = (i / 2) * Math.PI * 2 + Math.random();
+      const r = body.radius + 1.5 + Math.random() * 4;
+      ov.position.set(Math.cos(a) * r, (Math.random() - 0.3) * 1.5, Math.sin(a) * r);
+      ov.userData.phase = Math.random() * 6.28;
+      m.slaveGroup.add(ov);
+      m.overseers.push({ mesh: ov, angle: a, radius: r });
+    }
+  }
+
+  function regenerateMine(body) {
+    spawnMineWorkers(body);
+    body.mine.slaveGroup.visible = false;
+    if (body.mine.masterBase) { body.mine.masterBase.alive = true; body.mine.masterBase.hp = body.mine.masterBase.maxHp; body.mine.masterBase.beaconOn = false; if (body.mine.masterBase.group) body.mine.masterBase.group.visible = true; }
+  }
+
+  function updateMines(dt, t) {
+    for (const b of celestialBodies) {
+      const m = b.mine;
+      if (!m || m.depleted || !m.slaveGroup.visible) continue;
+      for (const s of m.slaves) {
+        const p = s.userData.phase || 0;
+        s.position.y = (s.userData.baseY || 0) + Math.sin(t * 2.2 + p) * 0.5;
+        const parts = s.userData.parts;
+        if (parts && parts.armR) parts.armR.rotation.x = Math.sin(t * 3 + p) * 0.7 - 0.3;
+        if (parts && parts.armL) parts.armL.rotation.x = Math.cos(t * 3 + p) * 0.7 - 0.3;
+      }
+      for (const ov of m.overseers) {
+        ov.angle += dt * 0.35;
+        ov.mesh.position.x = Math.cos(ov.angle) * ov.radius;
+        ov.mesh.position.z = Math.sin(ov.angle) * ov.radius;
+        const parts = ov.mesh.userData.parts;
+        if (parts && parts.armR) parts.armR.rotation.x = Math.sin(t * 1.6 + ov.mesh.userData.phase) * 1.2 - 0.6;
+      }
+    }
+  }
+
+  /* —— 附近可追踪事件（随机事件 / 生命体活动，小地图·大地图标注并可追踪） —— */
+  const nearbyEvents = [];
+  let nextEventId = 1;
+  function addNearbyEvent(pos, label, icon, color, life, managed) {
+    if (nearbyEvents.length >= 10) return null;
+    const ev = { id: nextEventId++, label, icon, color, pos, life, maxLife: life, managed: !!managed, group: null, vel: null, spin: 0, parts: null, burstT: null };
+    nearbyEvents.push(ev);
+    return ev;
+  }
+  function removeNearbyEvent(ev) {
+    const i = nearbyEvents.indexOf(ev);
+    if (i >= 0) nearbyEvents.splice(i, 1);
+    if (ev.group) {
+      scene.remove(ev.group);
+      ev.group.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) { if (Array.isArray(o.material)) o.material.forEach(m => m.dispose()); else o.material.dispose(); }
+      });
+    }
+  }
+  function updateNearbyEvents(dt, t) {
+    for (let i = nearbyEvents.length - 1; i >= 0; i--) {
+      const ev = nearbyEvents[i];
+      if (!ev.managed) {
+        ev.life -= dt;
+        if (ev.life <= 0) { removeNearbyEvent(ev); continue; }
+      }
+      if (ev.vel) ev.pos.addScaledVector(ev.vel, dt);
+      if (ev.spin && ev.group) ev.group.rotation.y += ev.spin * dt;
+      if (ev.burstT != null) {
+        ev.burstT -= dt;
+        if (ev.burstT <= 0) { ev.burstT = 0.8 + Math.random() * 1.2; createExplosion(ev.pos.clone().addScaledVector(randomUnitVector(), Math.random() * 70), 0xff6644); }
+      }
+      if (ev.parts) {
+        for (const s of ev.parts) {
+          s.userData.a += s.userData.sp * dt;
+          s.position.x = Math.cos(s.userData.a) * s.userData.r;
+          s.position.z = Math.sin(s.userData.a) * s.userData.r;
+          s.position.y = s.userData.y + Math.sin(t * 2 + s.userData.a) * 3;
+        }
+      }
+    }
+  }
+  function trackNearestEvent() {
+    let best = null, bd = Infinity;
+    for (const ev of nearbyEvents) {
+      const d = ev.pos.distanceTo(rocketOuter.position);
+      if (d < bd) { bd = d; best = ev; }
+    }
+    if (!best) { showToast('⚠️ 附近没有可追踪的事件'); return; }
+    trackTarget = { x: best.pos.x, y: best.pos.y, z: best.pos.z, label: best.icon + best.label, event: best };
+    showToast('🎯 正在追踪：' + best.icon + best.label + ' · ' + Math.floor(bd) + 'u');
+    Sound.beacon();
+  }
+  function spawnWarEvent() {
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 350 + Math.random() * 550);
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.SphereGeometry(14, 12, 8),
+      new THREE.MeshBasicMaterial({ color: 0xff5533, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    g.add(core);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xff6644, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(240, 240, 1); g.add(glow);
+    const glow2 = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xffaa44, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow2.scale.set(520, 520, 1); g.add(glow2);
+    g.position.copy(pos); scene.add(g);
+    const ev = addNearbyEvent(pos, '文明战争', '⚔️', '#ff6644', 26);
+    ev.group = g; ev.burstT = 0.3;
+    createExplosion(pos, 0xff6644);
+  }
+  const LIFE_EVENT_TYPES = [
+    { label: '太空鲸群迁徙', icon: '🐋', color: '#7fd4ff' },
+    { label: '星云生命群', icon: '🪼', color: '#c084fc' },
+    { label: '虫群巡游', icon: '🐛', color: '#7affa0' },
+    { label: '光之浮游生物', icon: '🪸', color: '#ffd060' }
+  ];
+  function spawnLifeEvent() {
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 300 + Math.random() * 500);
+    const spec = LIFE_EVENT_TYPES[Math.floor(Math.random() * LIFE_EVENT_TYPES.length)];
+    const g = new THREE.Group();
+    const parts = [];
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: new THREE.Color(spec.color), transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const a = (i / count) * Math.PI * 2, r = 12 + Math.random() * 34;
+      s.position.set(Math.cos(a) * r, (Math.random() - 0.5) * 22, Math.sin(a) * r);
+      s.scale.set(16 + Math.random() * 20, 16 + Math.random() * 20, 1);
+      s.userData = { a, r, y: s.position.y, sp: 0.3 + Math.random() * 0.7 };
+      g.add(s); parts.push(s);
+    }
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: new THREE.Color(spec.color), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(320, 320, 1); g.add(glow);
+    g.position.copy(pos); scene.add(g);
+    const ev = addNearbyEvent(pos, spec.label, spec.icon, spec.color, 30);
+    ev.group = g; ev.parts = parts; ev.vel = randomUnitVector().multiplyScalar(20 + Math.random() * 30); ev.spin = 0.5;
+  }
+
+  /* 运货飞船 */
+  const tradeShips = [];
+  function spawnTradeShip() {
+    const g = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 12, 8), new THREE.MeshStandardMaterial({ color: 0x8a94a6, metalness: 0.6, roughness: 0.4 }));
+    hull.rotation.x = Math.PI / 2;
+    g.add(hull);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x66aaff, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(90, 90, 1);
+    g.add(glow);
+    g.position.copy(rocketOuter.position.clone().addScaledVector(randomUnitVector(), 250 + Math.random() * 450));
+    scene.add(g);
+    const ts = { group: g, dir: randomUnitVector(), speed: 120 + Math.random() * 120, life: 10 };
+    ts.marker = addNearbyEvent(g.position, '运货飞船', '🚚', '#66aaff', 12, true);
+    tradeShips.push(ts);
+    showToast('🚚 一艘运货飞船从附近驶过（T 追踪）');
+  }
+  function updateTradeShips(dt) {
+    for (let i = tradeShips.length - 1; i >= 0; i--) {
+      const ts = tradeShips[i];
+      ts.life -= dt;
+      ts.group.position.addScaledVector(ts.dir, ts.speed * dt);
+      if (ts.life <= 0 || ts.group.position.distanceTo(rocketOuter.position) > 3200) {
+        removeNearbyEvent(ts.marker);
+        tradeShips.splice(i, 1);
+      }
+    }
+  }
+
+  function startLiberation(body) {
+    if (!body.mine || body.mine.depleted) return;
+    const mp = body.mine.masterPos;
+    if (body.mine.masterBase) { body.mine.masterBase.beaconOn = true; body.mine.masterBase.alive = true; body.mine.masterBase.hp = body.mine.masterBase.maxHp; }
+    trackTarget = { x: mp.x, y: mp.y, z: mp.z, label: '主人：' + body.mine.master.name, liberation: body };
+    showToast('⛓️ 解放矿奴：追踪主人「' + body.mine.master.name + '」，基地信标已点亮');
+    Sound.beacon();
+    startTakeoff();
+  }
+
+  function showLiberationChoice(body) {
+    if (!body.mine || body.mine.depleted) return;
+    const master = body.mine.master;
+    const liberate = confirm('主人「' + master.name + '」：「一念之间，我可让所有矿奴灰飞烟灭。你待如何？」\n\n[确定] 摧毁奴印，解放矿奴\n[取消] 饶主人一命，换取资源');
+    body.mine.depleted = true;
+    body.mine.slaves = [];
+    body.mine.slaveGroup.visible = false;
+    body.mine.regenTimer = 300 + srand() * 1500;
+    if (body.mine.masterBase) { body.mine.masterBase.alive = false; body.mine.masterBase.beaconOn = false; if (body.mine.masterBase.group) body.mine.masterBase.group.visible = false; }
+    if (liberate) {
+      NARRATIVE.karma++;
+      showToast('🕊️ 你摧毁奴印，解放了矿奴！');
+    } else {
+      NARRATIVE.karma--;
+      state.score += 800;
+      showToast('💀 主人一念之间，矿奴灰飞烟灭……你换取了资源');
+    }
+  }
+
+  /* —— 主人基地 3D 实体 + 战斗 —— */
+  let activeMasterBattle = null;
+  const playerProjectiles = [];
+  function createMasterBase(mine, body) {
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.SphereGeometry(20, 16, 12),
+      new THREE.MeshStandardMaterial({ color: 0x7a4ad0, emissive: 0x2a0a70, emissiveIntensity: 0.9, roughness: 0.35, metalness: 0.75 }));
+    g.add(core);
+    const seal = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xc084fc, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    seal.scale.set(90, 90, 1); g.add(seal);
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(34, 2, 8, 40), new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring1.rotation.x = Math.PI / 2; g.add(ring1);
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(46, 1.6, 8, 40), new THREE.MeshBasicMaterial({ color: 0xff6a9a, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring2.rotation.z = Math.PI / 3; g.add(ring2);
+    const turrets = [];
+    for (let i = 0; i < 4; i++) {
+      const tur = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 5, 13, 6),
+        new THREE.MeshStandardMaterial({ color: 0x4a3a6a, emissive: 0x1a0a3a, emissiveIntensity: 0.5, roughness: 0.5, metalness: 0.6 }));
+      const a = (i / 4) * Math.PI * 2;
+      tur.position.set(Math.cos(a) * 30, 0, Math.sin(a) * 30);
+      tur.rotation.z = -Math.sin(a); tur.rotation.x = Math.cos(a);
+      g.add(tur);
+      turrets.push({ mesh: tur, angle: a });
+    }
+    const beacon = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xc084fc, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    beacon.scale.set(1000, 1000, 1); g.add(beacon);
+    g.position.copy(mine.masterPos);
+    scene.add(g);
+    mine.masterBase = { group: g, core, seal, ring1, ring2, turrets, beacon, beaconOn: false, hp: 140, maxHp: 140, alive: true, shootT: 1.2, flashT: 0, projectiles: [], body };
+  }
+
+  function firePlayerWeapon() {
+    if (gameMode !== MODE.FLYING) return;
+    const origin = rocketOuter.position.clone();
+    const dir = getRocketForward(new THREE.Vector3());
+    const obj = new THREE.Mesh(new THREE.SphereGeometry(2.5, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
+    obj.position.copy(origin);
+    scene.add(obj);
+    playerProjectiles.push({ mesh: obj, dir, speed: 420, life: 3, dmg: 20 });
+    Sound.fire();
+  }
+
+  function fireMasterShot(mine) {
+    const mb = mine.masterBase;
+    const origin = mb.group.position.clone();
+    const dir = rocketOuter.position.clone().sub(origin).normalize();
+    const obj = new THREE.Mesh(new THREE.SphereGeometry(4, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    obj.position.copy(origin);
+    scene.add(obj);
+    mb.projectiles.push({ mesh: obj, dir, speed: 130, life: 6, dmg: { score: 150, hp: 12 }, spec: { name: '主人基地', icon: '🏰', color: 0xc084fc, color2: 0xff6a9a } });
+  }
+
+  function updateMasterBattles(dt, t) {
+    /* 基地视觉动画 + 基地弹体 */
+    for (const b of celestialBodies) {
+      const mine = b.mine;
+      if (!mine || !mine.masterBase) continue;
+      const mb = mine.masterBase;
+      if (mb.ring1) { mb.ring1.rotation.z += dt * 0.8; mb.ring2.rotation.z -= dt * 0.6; }
+      if (mb.beacon) {
+        if (mb.beaconOn) mb.beacon.material.opacity = 0.4 + Math.sin(t * 2.5) * 0.16;
+        else mb.beacon.material.opacity = 0;
+      }
+      for (const tr of mb.turrets) { tr.angle += dt * 0.4; tr.mesh.position.set(Math.cos(tr.angle) * 30, 0, Math.sin(tr.angle) * 30); }
+      if (mb.flashT > 0) { mb.flashT -= dt; mb.seal.material.opacity = 0.6 + Math.sin(t * 30) * 0.3; }
+      else if (mb.seal) mb.seal.material.opacity = 0.9;
+      for (let i = mb.projectiles.length - 1; i >= 0; i--) {
+        const p = mb.projectiles[i];
+        p.mesh.position.addScaledVector(p.dir, p.speed * dt);
+        p.life -= dt;
+        if (p.mesh.position.distanceTo(rocketOuter.position) < 8) {
+          applyDamage(p.dmg, p.spec);
+          createExplosion(p.mesh.position, p.spec.color2 || p.spec.color);
+          scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+          mb.projectiles.splice(i, 1);
+        } else if (p.life <= 0) {
+          scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+          mb.projectiles.splice(i, 1);
+        }
+      }
+    }
+    /* 玩家弹体 */
+    for (let i = playerProjectiles.length - 1; i >= 0; i--) {
+      const p = playerProjectiles[i];
+      p.mesh.position.addScaledVector(p.dir, p.speed * dt);
+      p.life -= dt;
+      let hit = false;
+      if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+        const mb = activeMasterBattle.masterBase;
+        if (p.mesh.position.distanceTo(mb.group.position) < 26) {
+          mb.hp = Math.max(0, mb.hp - p.dmg);
+          mb.flashT = 0.15;
+          spawnDamageNumber(mb.group.position.clone(), '-' + p.dmg, '#ffd060');
+          createExplosion(p.mesh.position, 0xffd060);
+          hit = true;
+          if (mb.hp <= 0) {
+            mb.alive = false;
+            createExplosion(mb.group.position, 0xc084fc);
+            showLiberationChoice(mb.body);
+            activeMasterBattle = null;
+          }
+        }
+      }
+      if (hit || p.life <= 0) {
+        scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+        playerProjectiles.splice(i, 1);
+      }
+    }
+    /* 基地开火 */
+    if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+      const mb = activeMasterBattle.masterBase;
+      mb.shootT -= dt;
+      if (mb.shootT <= 0) { mb.shootT = 1.4; fireMasterShot(activeMasterBattle); }
+    }
+    /* 战斗 HUD */
+    const th = document.getElementById('trackHud');
+    if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+      const mb = activeMasterBattle.masterBase;
+      if (th) { th.style.display = ''; th.textContent = '⚔️ 主人基地 HP ' + mb.hp + '/' + mb.maxHp + ' · 按【空格】开火'; }
+    }
   }
 
   const EARTH_CIV = {
@@ -4913,6 +5613,20 @@
     { idle: 0.15, walk: 0.25, work: 0.28, talk: 0.17, gathering: 0.10, ritual: 0.05 },
     { idle: 0.12, walk: 0.22, work: 0.26, talk: 0.17, gathering: 0.13, ritual: 0.10 }
   ];
+
+  const DAILY_LIFE_LINES = [
+    '原住民们正在集市上交易着奇异的货物',
+    '几个孩子追着一只发光的生物跑过街道',
+    '老人们围坐在树下，低声讲述着古老的传说',
+    '工匠们敲打着金属，火花四溅',
+    '一群人正围着一团能量起舞，仿佛在进行某种仪式',
+    '农夫们在田地里忙碌，播种着希望的种子',
+    '学者们对着天空指指点点，记录着星象',
+    '远处的广场上，一场辩论正在激烈进行'
+  ];
+  function showDailyLife() {
+    showToast('👀 ' + DAILY_LIFE_LINES[Math.floor(Math.random() * DAILY_LIFE_LINES.length)] + '（按 G 查看生态）');
+  }
 
   function pickActivity(devLevel, forceExclude) {
     const w = ACTIVITY_WEIGHTS[Math.min(devLevel, 4)];
@@ -5850,8 +6564,11 @@
           if (!inh.mesh.visible) inh.mesh.visible = true;
         }
         updateInhabitants(civ.inhabitants, dt, t, civ);
+        updateCivEcology(civ, dt, t);
+        if (civ.ecology) civ.ecology.group.visible = true;
       } else {
         for (const inh of civ.inhabitants) inh.mesh.visible = false;
+        if (civ.ecology) civ.ecology.group.visible = false;
       }
     }
 
@@ -6393,7 +7110,8 @@
     invulnTime: 0, speedBuffTime: 0, warpBuffTime: 0,
     gravityResistTime: 0,
     nextBodyDist: 2000, shake: 0,
-    hp: 100, maxHp: 100
+    skills: { basic: true },
+    hp: 100, maxHp: 100, gameHour: 0
   };
   const rocketQuat = new THREE.Quaternion();
   const camQuat = new THREE.Quaternion();
@@ -6421,6 +7139,9 @@
   let nearArkCenter = false;
   const stargates = [];
   let nearbyStargate = null;
+  let nearbyFederation = false;
+  let nearbyRift = null;
+  let nearbyDarkGod = false;
   const playerBeacons = [];
   const explosions = [];
   const keys = {};
@@ -6720,6 +7441,13 @@
     const civ = currentCivForDialogue;
     if (!civ) return;
     if (ch.karma) NARRATIVE.karma += ch.karma;
+    if (ch.gift === 'tech') {
+      state.score += 600;
+      if (civ.disposition !== 'friendly') { civ.disposition = 'friendly'; civ.dispositionColor = 0x4ade80; if (civ.dispositionRing) civ.dispositionRing.material.color.setHex(0x4ade80); }
+      showToast('🎁 文明接受了你的知识，回赠 600 觉醒度，态度变得友好');
+    } else if (ch.gift === 'skill') {
+      grantSkill('race_' + civ.type);
+    }
     if (ch.disposition) {
       civ.disposition = ch.disposition;
       const newColor = ch.disposition === 'friendly' ? 0x4ade80 : 0xef4444;
@@ -6775,6 +7503,9 @@
             state.score = Math.max(0, state.score - 300);
             showToast('⚠️ 中立文明收走了 300 觉醒度');
           }
+        }
+        if (civ.disposition === 'friendly' && civ.devLevel >= 2 && Math.random() < 0.6) {
+          grantSkill('race_' + civ.type);
         }
         if (NARRATIVE.pendingChapterAdvance >= 0) {
           advanceChapter(NARRATIVE.pendingChapterAdvance);
@@ -6901,6 +7632,9 @@
         triggerFinale();
       }
       else if (gameMode === MODE.FLYING && nearbyStargate) useStargate(nearbyStargate);
+      else if (gameMode === MODE.FLYING && nearbyFederation) openFederationTrade();
+      else if (gameMode === MODE.FLYING && nearbyRift) enterRift();
+      else if (gameMode === MODE.FLYING && nearbyDarkGod) openDarkGodTrade();
       else if (gameMode === MODE.FLYING && nearbyBody) startLanding(nearbyBody);
       else if (gameMode === MODE.LANDED) startTakeoff();
     }
@@ -6909,10 +7643,31 @@
     }
     if (k === 'l') { shareSeed(); }
     if (k === 'm') { toggleMinimap(); }
+    if (k === 't') {
+      if (state.running && gameMode === MODE.FLYING) trackNearestEvent();
+    }
+    if (k === 'g') {
+      if (state.running && gameMode === MODE.LANDED && landedCiv) viewEcology(landedCiv);
+    }
+    if (k === ' ') {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      e.preventDefault();
+      useSkill('basic');
+    }
+    if (k === '1') useSkillByIndex(0);
+    if (k === '2') useSkillByIndex(1);
+    if (k === '3') useSkillByIndex(2);
+    if (k === '4') useSkillByIndex(3);
+    if (k === '5') useSkillByIndex(4);
+    if (k === '6') useSkillByIndex(5);
+    if (k === '7') useSkillByIndex(6);
+    if (k === '8') useSkillByIndex(7);
+    if (k === '9') useSkillByIndex(8);
     if (k === 'f') {
       if (state.running && gameMode === MODE.LANDED) {
         if (currentCivForDialogue) advanceDialogue();
         else if (landedCiv && !landedCiv.interacted) openDialogue(landedCiv);
+        else if (landingBody && landingBody.mine && !landingBody.mine.depleted) startLiberation(landingBody);
       }
     }
     if (k === 'escape') { if (currentCivForDialogue) closeDialogue(); }
@@ -6962,6 +7717,7 @@
     if (body.isEarth) {
       landedCiv = EARTH_CIV;
     }
+    if (landedCiv && !landedCiv.isEarth) showDailyLife();
   }
   function updateLanding(dt) {
     landingProgress += dt / LAND_DURATION;
@@ -7012,6 +7768,7 @@
   function startGame(saveData) {
     Sound.ensure();
     Sound.musicStart();
+    document.getElementById('minimap').style.display = '';
     if (ONLINE.mode === 'multi') initOnline();
     clearCelestialBodies();
     closeDialogue();
@@ -7296,6 +8053,8 @@
   }
   function updateEarth(dt) {
     earthSphere.rotation.y += dt * 0.03;
+    earthClouds.rotation.y += dt * 0.055;
+    earthNight.material.opacity = (state.night || 0) * 0.9;
     if (EARTH_CIV.marker) {
       EARTH_CIV.marker.position.copy(EARTH_POS).add(EARTH_CIV.offset);
       EARTH_CIV.marker.position.y += Math.sin(performance.now() * 0.0012 + EARTH_CIV.bobPhase) * 1.8;
@@ -7339,7 +8098,7 @@
       if (b.belt) b.belt.rotation.y += dt * 0.25;
       if (b.ring) b.ring.rotation.y += dt * 0.05;
       const shouldShow = rp.distanceTo(b.position) < 900 || b === landingBody;
-      if (shouldShow !== b.ecoVisible) { b.ecoVisible = shouldShow; b.eco.visible = shouldShow; }
+      if (shouldShow !== b.ecoVisible) { b.ecoVisible = shouldShow; b.eco.visible = shouldShow; if (b.mine) b.mine.slaveGroup.visible = shouldShow; }
     }
   }
 
@@ -7439,7 +8198,7 @@
   function updateStargates(dt, t) {
     /* 惰性生成：为带文明的行星补建星门 */
     for (const b of celestialBodies) {
-      if (b.civilization && !b.stargate) { b.stargate = createStargate(b); stargates.push(b.stargate); }
+      if ((b.civilization || b.mine) && !b.stargate) { b.stargate = createStargate(b); stargates.push(b.stargate); }
     }
     /* 清理：行星已回收则移除其星门 */
     for (let i = stargates.length - 1; i >= 0; i--) {
@@ -7473,16 +8232,37 @@
   }
 
   function useStargate(sg) {
-    const others = stargates.filter(s => s !== sg && s.body.civilization);
+    const others = stargates.filter(s => s !== sg);
     if (!others.length) { showToast('🛰️ 星门网络尚未展开，暂无可传送目标'); return; }
-    const dest = others[Math.floor(Math.random() * others.length)];
+    const list = document.getElementById('stargateList');
+    if (!list) return;
+    list.innerHTML = '';
+    others.forEach(dest => {
+      const dist = sg.group.position.distanceTo(dest.group.position);
+      const cost = Math.max(100, Math.floor(dist / 30));
+      const name = (dest.body.civilization && dest.body.civilization.name) ? dest.body.civilization.name : dest.body.name;
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML = '<div class="upg-icon">🌀</div><div class="upg-body"><div class="upg-name">' + name + '</div><div class="upg-desc">距离 ' + Math.floor(dist) + ' u · 消耗 ' + cost + ' 觉醒度</div></div>';
+      const btn = document.createElement('button');
+      btn.className = 'upg-btn';
+      btn.textContent = '传送';
+      btn.addEventListener('click', () => { doStargateJump(dest, cost); document.getElementById('stargateModal').classList.remove('show'); });
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    document.getElementById('stargateModal').classList.add('show');
+  }
+  function doStargateJump(dest, cost) {
+    if (state.score < cost) { showToast('⚠️ 觉醒度不足，无法传送'); return; }
+    state.score -= cost;
     const dir = dest.group.position.clone().sub(dest.body.position).normalize();
     const arr = dest.group.position.clone().addScaledVector(dir, 16);
     rocketOuter.position.copy(arr);
     rocketQuat.setFromUnitVectors(LOCAL_FWD, dir);
     rocketOuter.quaternion.copy(rocketQuat);
     const civName = (dest.body.civilization && dest.body.civilization.name) ? dest.body.civilization.name : dest.body.name;
-    showToast('🌀 穿越星门 · 抵达「' + civName + '」');
+    showToast('🌀 穿越星门 · 抵达「' + civName + '」（-' + cost + ' 觉醒度）');
     Sound.beacon();
     state.distance = Math.max(state.distance, arr.length());
   }
@@ -7490,6 +8270,260 @@
   /* ================================================================
      十四·C、恒星系统：随机恒星 + 日冕 + 引力潮汐 + 耀斑
    ================================================================ */
+  /* 宇宙种族比赛会场 + 群星联邦（五大星系贸易枢纽） */
+  const COMPETITION_POS = new THREE.Vector3(12000, 1800, -9000);
+  const FEDERATION_POS = new THREE.Vector3(5000, 1200, -13000);
+  const competitionVenue = { group: null, ring: null, halo: null };
+  const federationHub = { group: null, ring1: null, ring2: null, halo: null };
+  const FEDERATION_RADIUS = 9000;   // 群星联邦覆盖范围（约 5 个星系）
+  const raceShips = [];
+  let venueCheerT = 0;
+  function initVenueRace() {
+    /* 观众：场馆周围的发光人群（个体精灵，可欢呼弹跳） */
+    const crowdGroup = new THREE.Group();
+    competitionVenue.spectators = [];
+    for (let i = 0; i < 130; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 100 + Math.random() * 70;
+      const y = (Math.random() - 0.5) * 44;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xffe9a8, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+      sp.scale.set(5 + Math.random() * 5, 5 + Math.random() * 5, 1);
+      sp.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+      crowdGroup.add(sp);
+      competitionVenue.spectators.push({ sp, baseY: y, a, phase: Math.random() * 6.28 });
+    }
+    crowdGroup.position.copy(COMPETITION_POS);
+    scene.add(crowdGroup);
+    competitionVenue.crowdGroup = crowdGroup;
+    /* 比赛飞船：绕场馆轨道竞速 */
+    const shipColors = [0xffd060, 0x7fd4ff, 0xff6b6b, 0x7affa0, 0xf0abfc, 0x8affff];
+    for (let i = 0; i < 8; i++) {
+      const ship = new THREE.Mesh(new THREE.ConeGeometry(4, 14, 4), new THREE.MeshBasicMaterial({ color: shipColors[i % shipColors.length], transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: shipColors[i % shipColors.length], transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.scale.set(30, 30, 1);
+      ship.add(glow);
+      scene.add(ship);
+      raceShips.push({ mesh: ship, angle: (i / 8) * Math.PI * 2, speed: 0.3 + Math.random() * 0.3, radius: 150 + Math.random() * 30, y: (Math.random() - 0.5) * 30, phase: Math.random() * 6.28 });
+    }
+  }
+  function createCompetitionVenue() {
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.SphereGeometry(40, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffd060, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    g.add(core);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(80, 6, 8, 48), new THREE.MeshBasicMaterial({ color: 0xffd060, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring.rotation.x = Math.PI / 2.3; g.add(ring);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xffd060, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(620, 620, 1); g.add(halo);
+    g.position.copy(COMPETITION_POS);
+    scene.add(g);
+    competitionVenue.group = g; competitionVenue.ring = ring; competitionVenue.halo = halo;
+  }
+  function createFederationHub() {
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.SphereGeometry(55, 16, 12), new THREE.MeshBasicMaterial({ color: 0x7fd4ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    g.add(core);
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(110, 7, 8, 56), new THREE.MeshBasicMaterial({ color: 0x7fd4ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring1.rotation.x = Math.PI / 2.1; g.add(ring1);
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(150, 4, 8, 56), new THREE.MeshBasicMaterial({ color: 0xbff0ff, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring2.rotation.z = Math.PI / 3; g.add(ring2);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x7fd4ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(900, 900, 1); g.add(halo);
+    g.position.copy(FEDERATION_POS);
+    scene.add(g);
+    federationHub.group = g; federationHub.ring1 = ring1; federationHub.ring2 = ring2; federationHub.halo = halo;
+  }
+  const FEDERATION_SHOPS = [
+    { icon: '💃', name: '魅族青楼', desc: '温柔乡 · 恢复 40 生命', cost: 500, effect: 'heal' },
+    { icon: '🔧', name: '硅基维修店', desc: '纳米重构 · 完全修复船体', cost: 1200, effect: 'repair' },
+    { icon: '🛏️', name: '露姆族床垫', desc: '深度安眠 · 获得护盾', cost: 800, effect: 'sleep' },
+    { icon: '🧪', name: '基因交易所', desc: '基因强化 · 生命上限 +8', cost: 2500, effect: 'gene' }
+  ];
+  function openFederationTrade() {
+    const list = document.getElementById('federationList');
+    if (!list) return;
+    list.innerHTML = '';
+    FEDERATION_SHOPS.forEach(shop => {
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML = '<div class="upg-icon">' + shop.icon + '</div><div class="upg-body"><div class="upg-name">' + shop.name + '</div><div class="upg-desc">' + shop.desc + '</div></div>';
+      const btn = document.createElement('button');
+      btn.className = 'upg-btn';
+      btn.textContent = shop.cost + ' 觉醒度';
+      btn.addEventListener('click', () => buyFederationService(shop));
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    document.getElementById('federationModal').classList.add('show');
+  }
+  function buyFederationService(shop) {
+    if (state.score < shop.cost) { showToast('⚠️ 觉醒度不足'); return; }
+    state.score -= shop.cost;
+    if (shop.effect === 'heal') { state.hp = Math.min(state.maxHp, state.hp + 40); updateHpBar(); showToast('💃 魅族为你抚平了伤痛（+40 生命）'); }
+    else if (shop.effect === 'repair') { state.hp = state.maxHp; updateHpBar(); showToast('🔧 硅基技师完全修复了船体'); }
+    else if (shop.effect === 'sleep') { state.invulnTime = Math.max(state.invulnTime, 12); showToast('🛏️ 露姆族的床垫让你获得护盾'); }
+    else if (shop.effect === 'gene') { state.maxHp += 8; state.hp = Math.min(state.maxHp, state.hp + 8); updateHpBar(); showToast('🧪 基因强化完成，生命上限 +8'); }
+    Sound.quest();
+    openFederationTrade();
+  }
+
+  /* ================================================================
+      3.5 维时空 · 裂隙 · 暗黑大陆 · 黑神
+   ================================================================ */
+  const DIM35_CENTER = new THREE.Vector3(0, -42000, 145000);
+  const DIM35_RADIUS = 24000;
+  const rifts = [];
+  let dim35Built = false;
+  let darkGod = null;
+  let dim35 = null;
+  let riftTimer = 60;
+  function createRift(pos) {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(16, 2.2, 8, 40), new THREE.MeshBasicMaterial({ color: 0xa06aff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    g.add(ring);
+    const inner = new THREE.Mesh(new THREE.TorusGeometry(11, 1.6, 8, 40), new THREE.MeshBasicMaterial({ color: 0x3a1a7a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    g.add(inner);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xa06aff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(90, 90, 1); g.add(halo);
+    g.position.copy(pos);
+    scene.add(g);
+    rifts.push({ group: g, ring, inner, halo, position: pos.clone(), phase: Math.random() * 6.28 });
+  }
+  function updateRifts(dt, t) {
+    riftTimer -= dt;
+    if (riftTimer <= 0) {
+      riftTimer = 40 + Math.random() * 50;
+      if (rifts.length < 3) createRift(rocketOuter.position.clone().addScaledVector(randomUnitVector(), 1200 + Math.random() * 1600));
+    }
+    for (let i = rifts.length - 1; i >= 0; i--) {
+      const r = rifts[i];
+      if (r.position.distanceTo(rocketOuter.position) > 12000) { scene.remove(r.group); r.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); rifts.splice(i, 1); continue; }
+      r.ring.rotation.z += dt * 0.8;
+      r.inner.rotation.z -= dt * 0.5;
+      r.halo.material.opacity = 0.5 + Math.sin(t * 2.5 + r.phase) * 0.25;
+    }
+  }
+  function enterRift() {
+    const ang = Math.random() * Math.PI * 2;
+    const rr = Math.random() * DIM35_RADIUS * 0.7;
+    rocketOuter.position.set(
+      DIM35_CENTER.x + Math.cos(ang) * rr,
+      DIM35_CENTER.y + (Math.random() - 0.5) * 6000,
+      DIM35_CENTER.z + Math.sin(ang) * rr
+    );
+    showToast('🌌 你坠入了 3.5 维时空……');
+    Sound.warpIn();
+  }
+  const DARK_GOD_ITEMS = [
+    { icon: '🖤', name: '黑暗祝福', desc: '获得 30 秒护盾', cost: 600, effect: 'shield' },
+    { icon: '⚫', name: '暗物质精华', desc: '恢复全部生命', cost: 1000, effect: 'heal' },
+    { icon: '👁️', name: '黑神凝视', desc: '获得 2000 觉醒度', cost: 1500, effect: 'score' },
+    { icon: '🌀', name: '返回主宇宙', desc: '传送到地球附近', cost: 200, effect: 'return' }
+  ];
+  function createDim35() {
+    if (dim35Built) return;
+    dim35Built = true;
+    const continent = new THREE.Mesh(new THREE.CylinderGeometry(3200, 3800, 400, 40), new THREE.MeshStandardMaterial({ color: 0x1a1026, roughness: 0.85, metalness: 0.3, flatShading: true }));
+    continent.position.copy(DIM35_CENTER);
+    scene.add(continent);
+    const castle = new THREE.Group();
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x2a1a3a, roughness: 0.7, metalness: 0.4 });
+    const towerMat = new THREE.MeshStandardMaterial({ color: 0x3a2a4a, roughness: 0.6, metalness: 0.5 });
+    const keep = new THREE.Mesh(new THREE.CylinderGeometry(300, 340, 800, 8), wallMat);
+    keep.position.y = 600; castle.add(keep);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      const tower = new THREE.Mesh(new THREE.CylinderGeometry(120, 140, 520, 8), towerMat);
+      tower.position.set(Math.cos(a) * 520, 460, Math.sin(a) * 520);
+      castle.add(tower);
+      const spire = new THREE.Mesh(new THREE.ConeGeometry(80, 180, 8), wallMat);
+      spire.position.set(Math.cos(a) * 520, 800, Math.sin(a) * 520);
+      castle.add(spire);
+    }
+    const keepSpire = new THREE.Mesh(new THREE.ConeGeometry(180, 300, 8), wallMat);
+    keepSpire.position.y = 1150; castle.add(keepSpire);
+    const darkGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x6a3aff, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
+    darkGlow.scale.set(4000, 4000, 1); darkGlow.position.y = 400; castle.add(darkGlow);
+    castle.position.copy(DIM35_CENTER).add(new THREE.Vector3(0, 200, 0));
+    scene.add(castle);
+    const godGroup = new THREE.Group();
+    const godCore = new THREE.Mesh(new THREE.SphereGeometry(60, 16, 12), new THREE.MeshBasicMaterial({ color: 0x120a22, transparent: true, opacity: 0.95 }));
+    godGroup.add(godCore);
+    const godEye = new THREE.Mesh(new THREE.SphereGeometry(20, 12, 8), new THREE.MeshBasicMaterial({ color: 0xc084ff }));
+    godEye.position.y = 10; godGroup.add(godEye);
+    const godGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x8a4aff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    godGlow.scale.set(600, 600, 1); godGroup.add(godGlow);
+    godGroup.position.copy(DIM35_CENTER).add(new THREE.Vector3(0, 1100, 0));
+    scene.add(godGroup);
+    darkGod = { group: godGroup, core: godCore, eye: godEye, glow: godGlow, phase: Math.random() * 6.28 };
+    const plates = [];
+    for (let i = 0; i < 6; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const rr = 6000 + Math.random() * 12000;
+      const plate = new THREE.Mesh(new THREE.CylinderGeometry(600 + Math.random() * 500, 800 + Math.random() * 500, 120, 24), new THREE.MeshStandardMaterial({ color: 0x241a30, roughness: 0.85, metalness: 0.3, flatShading: true }));
+      plate.position.set(DIM35_CENTER.x + Math.cos(a) * rr, DIM35_CENTER.y + (Math.random() - 0.5) * 8000, DIM35_CENTER.z + Math.sin(a) * rr);
+      scene.add(plate);
+      const creatures = [];
+      const n = 2 + Math.floor(Math.random() * 5);
+      for (let c = 0; c < n; c++) {
+        const cr = new THREE.Mesh(new THREE.OctahedronGeometry(30 + Math.random() * 30, 0), new THREE.MeshBasicMaterial({ color: 0x7a3aff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+        const ba = Math.random() * Math.PI * 2;
+        const br = 150 + Math.random() * 250;
+        cr.position.set(plate.position.x + Math.cos(ba) * br, plate.position.y + 80, plate.position.z + Math.sin(ba) * br);
+        scene.add(cr);
+        creatures.push({ mesh: cr, angle: ba, radius: br, speed: 0.3 + Math.random() * 0.5, y: cr.position.y, phase: Math.random() * 6.28 });
+      }
+      plates.push({ mesh: plate, creatures });
+    }
+    dim35 = { continent, castle, plates };
+  }
+  function updateDim35(dt, t) {
+    if (!dim35) return;
+    for (const p of dim35.plates) {
+      for (const c of p.creatures) {
+        c.angle += c.speed * dt;
+        c.mesh.position.x = p.mesh.position.x + Math.cos(c.angle) * c.radius;
+        c.mesh.position.z = p.mesh.position.z + Math.sin(c.angle) * c.radius;
+        c.mesh.position.y = c.y + Math.sin(t * 1.5 + c.phase) * 30;
+        c.mesh.rotation.y += dt;
+      }
+    }
+    if (darkGod) {
+      darkGod.group.position.y = DIM35_CENTER.y + 1100 + Math.sin(t * 1.2 + darkGod.phase) * 60;
+      darkGod.glow.material.opacity = 0.5 + Math.sin(t * 2 + darkGod.phase) * 0.25;
+      darkGod.eye.material.opacity = 0.7 + Math.sin(t * 3) * 0.3;
+    }
+    const dDim = rocketOuter.position.distanceTo(DIM35_CENTER);
+    const ov = document.getElementById('dim35Overlay');
+    if (ov) ov.style.opacity = (dDim < DIM35_RADIUS ? Math.min(0.7, (DIM35_RADIUS - dDim) / DIM35_RADIUS) : 0).toFixed(2);
+  }
+  function openDarkGodTrade() {
+    const modal = document.getElementById('darkGodModal');
+    const list = document.getElementById('darkGodList');
+    if (!modal || !list) return;
+    list.innerHTML = '';
+    DARK_GOD_ITEMS.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML = '<div class="upg-icon">' + item.icon + '</div><div class="upg-body"><div class="upg-name">' + item.name + '</div><div class="upg-desc">' + item.desc + '</div></div>';
+      const btn = document.createElement('button');
+      btn.className = 'upg-btn';
+      btn.textContent = item.cost + ' 觉醒度';
+      btn.addEventListener('click', () => buyDarkGodItem(item));
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    modal.classList.add('show');
+  }
+  function buyDarkGodItem(item) {
+    if (state.score < item.cost) { showToast('⚠️ 觉醒度不足'); return; }
+    state.score -= item.cost;
+    if (item.effect === 'shield') { state.invulnTime = Math.max(state.invulnTime, 30); showToast('🖤 黑神赐予你黑暗祝福'); }
+    else if (item.effect === 'heal') { state.hp = state.maxHp; updateHpBar(); showToast('⚫ 暗物质精华恢复了你的生命'); }
+    else if (item.effect === 'score') { state.score += 2000; showToast('👁️ 黑神凝视：+2000 觉醒度'); }
+    else if (item.effect === 'return') { document.getElementById('darkGodModal').classList.remove('show'); rocketOuter.position.copy(EARTH_POS).add(new THREE.Vector3(0, 2000, 0)); showToast('🌀 你被送回了主宇宙'); }
+    Sound.quest();
+    openDarkGodTrade();
+  }
   const stars = [];
   const STAR_CFG = { max: 4, spawnEvery: [50, 95], pull: 30, tideR: 560 };
   let starTimer = 45;
@@ -7661,7 +8695,9 @@
   function updateRandomEvents(dt) {
     eventTimer -= dt;
     if (eventTimer > 0) return;
-    eventTimer = 55 + Math.random() * 70;
+    const h = state.gameHour;
+    const isNight = h >= 18 || h < 6;
+    eventTimer = (isNight ? 35 : 55) + Math.random() * (isNight ? 50 : 70);
     const ch = NARRATIVE.chapter;
     const pool = [
       { text: '📜 你截获一段远古信号——"起源者的脚步仍在天幕之上回响……"', act: () => { state.score += 300; } },
@@ -7672,6 +8708,9 @@
       { text: '✨ 附近的尘埃云闪烁着生命的光，让你短暂加速。', act: () => { state.speedBuffTime = 8; } }
     ];
     if (ch >= 1) pool.push({ text: '🌿 一粒来自绿色行星的孢子落在舷窗上，生根发芽。', act: () => { state.score += 350; } });
+    pool.push({ text: '⚔️ 两个文明之间爆发了战争！', act: () => { spawnWarEvent(); } });
+    pool.push({ text: '🚚 一艘运货飞船正在穿越星域', act: () => { spawnTradeShip(); } });
+    pool.push({ text: '🐋 一群太空生命体正在附近迁徙', act: () => { spawnLifeEvent(); } });
     if (ch >= 2) pool.push({ text: '📡 方舟核心的坐标信号在星图中闪烁了一下。', act: () => { state.score += 500; } });
     if (ch >= 3) pool.push({ text: '🕳️ 你感应到远处一场时空涟漪——也许是大寂静的门槛。', act: () => { spawnBlackHole(); } });
     const ev = pool[Math.floor(Math.random() * pool.length)];
@@ -7710,6 +8749,12 @@
       const d = rp.distanceTo(sg.group.position);
       if (d < STARGATE_INTERACT_RANGE && d < nearestGateD) { nearestGateD = d; nearbyStargate = sg; }
     }
+    nearbyFederation = rp.distanceTo(FEDERATION_POS) < 340;
+    nearbyRift = null;
+    for (const r of rifts) {
+      if (r.position.distanceTo(rp) < 60) { nearbyRift = r; break; }
+    }
+    nearbyDarkGod = darkGod ? rp.distanceTo(darkGod.group.position) < 700 : false;
     nearbyBody = null; nearbyDist = Infinity;
     for (const b of celestialBodies) {
       const d = rp.distanceTo(b.position) - b.radius;
@@ -7746,6 +8791,18 @@
     } else if (nearbyStargate) {
       promptKey.textContent = 'E';
       promptText.textContent = '穿越星门 · 跃迁至其他文明';
+      promptEl.classList.add('show');
+    } else if (nearbyFederation) {
+      promptKey.textContent = 'E';
+      promptText.textContent = '进入群星联邦 · 五大星系贸易枢纽';
+      promptEl.classList.add('show');
+    } else if (nearbyRift) {
+      promptKey.textContent = 'E';
+      promptText.textContent = '进入 3.5 维时空裂隙';
+      promptEl.classList.add('show');
+    } else if (nearbyDarkGod) {
+      promptKey.textContent = 'E';
+      promptText.textContent = '与黑神对话 · 交易';
       promptEl.classList.add('show');
     } else if (nearbyBody) {
       let suffix = '';
@@ -7791,6 +8848,10 @@
       } else {
         promptEl.classList.remove('show');
       }
+    } else if (landingBody && landingBody.mine && !landingBody.mine.depleted) {
+      promptKey.textContent = 'F';
+      promptText.textContent = '解放矿奴（主人：' + landingBody.mine.master.name + '）';
+      promptEl.classList.add('show');
     } else {
       promptEl.classList.remove('show');
     }
@@ -7811,10 +8872,28 @@
   }
   function updateGame(dt) {
     state.time += dt;
-    if (rocketOuter.position.length() > 60000 && !wallWarned) {
+    state.gameHour = (state.time / 60) % 24;
+    competitionTimer -= dt;
+    if (competitionTimer <= 0) { competitionTimer = 1440; runRaceCompetition(); }
+    updateRaceSim(dt);
+    /* 昼夜（现实 1 分钟 = 游戏 1 小时） */
+    const h = state.gameHour;
+    let night = 0;
+    if (h >= 18 || h < 6) night = 1;
+    else if (h >= 6 && h < 8) night = (8 - h) / 2;
+    else if (h >= 16 && h < 18) night = (h - 16) / 2;
+    const no = document.getElementById('nightOverlay');
+    if (no) no.style.opacity = (night * 0.32).toFixed(2);
+    state.night = night;
+    if (Math.abs(rocketOuter.position.x - GAMMA_WALL_X) < 6000 && !wallWarned) {
       wallWarned = true;
-      showToast('⚠️ 已接近宇宙边界 · 伽马风暴墙（墙后传说有星空矿场与矿奴）');
+      showToast('⚡ 前方是伽马分界墙——一侧是文明发展地，另一侧是星空矿场');
     }
+    const wallSide = rocketOuter.position.x > GAMMA_WALL_X ? 'civ' : 'mine';
+    if (lastWallSide && lastWallSide !== wallSide) {
+      showToast(wallSide === 'civ' ? '🌿 你已穿越分界墙，回到文明发展地' : '⛏️ 你已穿越分界墙，进入星空矿场');
+    }
+    lastWallSide = wallSide;
     const scoreMult = 1 + 0.25 * (meta.upgrades.score || 0);
     state.score += dt * 12 * (1 + state.warp * 3) * scoreMult;
     if (state.score >= 100000) unlockAchievement('megaRich');
@@ -7826,6 +8905,63 @@
     if (state.gravityResistTime > 0) state.gravityResistTime -= dt;
     anchorRing.visible = state.gravityResistTime > 0;
     if (anchorRing.visible) anchorRing.rotation.y += dt * 2.5;
+    /* 任务追踪自动导航 + 箭头/距离（支持追踪移动中的事件） */
+    if (trackTarget) {
+      let t = new THREE.Vector3(trackTarget.x, trackTarget.y, trackTarget.z);
+      let eventAlive = true;
+      if (trackTarget.event) {
+        if (nearbyEvents.indexOf(trackTarget.event) < 0) eventAlive = false;
+        else t.copy(trackTarget.event.pos);
+      }
+      if (!eventAlive) {
+        showToast('💨 事件已结束：' + trackTarget.label);
+        trackTarget = null;
+        trackArrow.visible = false;
+        const th = document.getElementById('trackHud');
+        if (th) th.style.display = 'none';
+      } else {
+        const d = rocketOuter.position.distanceTo(t);
+        if (d < 40 && !trackTarget.event) {
+          if (trackTarget.liberation) {
+            const mine = trackTarget.liberation.mine;
+            if (mine && mine.masterBase && mine.masterBase.alive) {
+              activeMasterBattle = mine;
+              showToast('⚔️ 主人基地「' + mine.master.name + '」进入战斗！按【空格】开火');
+            } else {
+              showLiberationChoice(trackTarget.liberation);
+            }
+          } else {
+            showToast('🎯 已到达：' + trackTarget.label);
+          }
+          trackTarget = null;
+        } else {
+          rocketOuter.position.addScaledVector(t.clone().sub(rocketOuter.position).normalize(), Math.min(d, 600) * 0.04);
+        }
+        if (trackTarget) {
+          trackArrow.visible = true;
+          const fwd = getRocketForward(new THREE.Vector3());
+          trackArrow.position.copy(rocketOuter.position).addScaledVector(fwd, 16);
+          trackArrow.lookAt(t);
+          const th = document.getElementById('trackHud');
+          if (th) { th.style.display = ''; th.textContent = '🎯 ' + trackTarget.label + ' · ' + Math.floor(d) + 'u'; }
+        }
+      }
+    } else {
+      trackArrow.visible = false;
+      const th = document.getElementById('trackHud');
+      if (th) th.style.display = 'none';
+    }
+    /* 矿奴再生 */
+    for (const b of celestialBodies) {
+      if (b.mine && b.mine.depleted) {
+        b.mine.regenTimer -= dt;
+        if (b.mine.regenTimer <= 0) {
+          b.mine.depleted = false;
+          regenerateMine(b);
+          showToast('⛏️ 矿奴已重新出现在「' + b.name + '」');
+        }
+      }
+    }
     const s = Math.floor(state.score);
     if (s !== lastScoreShown) { lastScoreShown = s; scoreEl.textContent = s; }
     const dFloor = Math.floor(state.distance);
@@ -8149,11 +9285,84 @@
     Sound.warpIn();
     showToast('🌀 已传送到好友附近');
   }
+  let trackTarget = null;
+  const trackArrow = new THREE.Group();
+  const trackArrowCone = new THREE.Mesh(
+    new THREE.ConeGeometry(1.4, 3, 4),
+    new THREE.MeshBasicMaterial({ color: 0xffd060, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  trackArrowCone.rotation.x = Math.PI / 2;
+  trackArrow.add(trackArrowCone);
+  trackArrow.visible = false;
+  scene.add(trackArrow);
+
+  /* 深空尘埃雾：漂浮的宇宙尘埃，营造寂静深邃感 */
+  const spaceDustCount = 700;
+  const spaceDustPos = new Float32Array(spaceDustCount * 3);
+  for (let i = 0; i < spaceDustCount; i++) {
+    spaceDustPos[i * 3] = (Math.random() - 0.5) * 7000;
+    spaceDustPos[i * 3 + 1] = (Math.random() - 0.5) * 7000;
+    spaceDustPos[i * 3 + 2] = (Math.random() - 0.5) * 7000;
+  }
+  const spaceDustGeo = new THREE.BufferGeometry();
+  spaceDustGeo.setAttribute('position', new THREE.BufferAttribute(spaceDustPos, 3));
+  const spaceDust = new THREE.Points(spaceDustGeo, new THREE.PointsMaterial({
+    size: 3, color: 0x88aacc, transparent: true, opacity: 0.22,
+    blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
+  }));
+  scene.add(spaceDust);
+  function trackQuest(kind) {
+    let target = null, label = '';
+    if (kind === 'bottle') {
+      const b = driftBottles.find(x => !x.collected);
+      if (b) { target = b.position; label = '漂流瓶'; }
+    } else if (kind === 'beacon') {
+      const b = arkBeacons.find(x => !x.activated);
+      if (b) { target = b.position; label = '方舟碎片'; }
+      else { target = ARK_CENTER_POS; label = '银河核心'; }
+    } else if (kind === 'ark') {
+      target = ARK_CENTER_POS; label = '银河核心';
+    } else if (kind === 'home') {
+      target = EARTH_POS; label = '地球';
+    } else if (kind === 'survey') {
+      let best = null, bd = Infinity;
+      for (const b of celestialBodies) {
+        if (NARRATIVE.surveyed.has(b.name)) continue;
+        const d = b.position.distanceTo(rocketOuter.position);
+        if (d < bd) { bd = d; best = b; }
+      }
+      if (best) { target = best.position; label = '未测绘行星：' + best.name; }
+    } else if (kind === 'megastruct') {
+      let best = null, bd = Infinity;
+      for (const b of celestialBodies) {
+        if (!b.civilization || b.civilization.devLevel < 4) continue;
+        const d = b.position.distanceTo(rocketOuter.position);
+        if (d < bd) { bd = d; best = b; }
+      }
+      if (best) { target = best.position; label = '星系文明：' + best.name; }
+    } else {
+      let best = null, bd = Infinity;
+      for (const b of celestialBodies) {
+        if (!b.civilization) continue;
+        const d = b.position.distanceTo(rocketOuter.position);
+        if (d < bd) { bd = d; best = b; }
+      }
+      if (best) { target = best.position; label = '文明：' + best.name; }
+    }
+    if (target) {
+      trackTarget = { x: target.x, y: target.y, z: target.z, label };
+      showToast('🎯 正在追踪：' + label);
+      Sound.beacon();
+    } else {
+      showToast('⚠️ 当前没有可追踪的目标');
+    }
+  }
   function renderMinimap() {
     const cv = document.getElementById('minimap');
     if (!cv) return;
     const ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height, cx = W / 2, cy = H / 2;
+    const big = ONLINE.minimapBig;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(6,12,26,.9)';
     ctx.beginPath(); ctx.arc(cx, cy, cx - 1, 0, Math.PI * 2); ctx.fill();
@@ -8162,30 +9371,79 @@
     ctx.strokeStyle = 'rgba(140,180,255,.2)';
     ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
-    const scale = 0.08, R = cx - 8;
-    const draw = (px, pz, color, r) => {
+    ctx.beginPath(); ctx.arc(cx, cy, big ? 5 : 4, 0, Math.PI * 2); ctx.fill();
+    const scale = big ? 0.12 : 0.08, R = cx - 8;
+    const project = (px, pz) => {
       let dx = (px - rocketOuter.position.x) * scale;
       let dz = (pz - rocketOuter.position.z) * scale;
       const dd = Math.hypot(dx, dz);
       if (dd > R) { dx *= R / dd; dz *= R / dd; }
-      ctx.fillStyle = color;
-      ctx.beginPath(); ctx.arc(cx + dx, cy + dz, r || 3.5, 0, Math.PI * 2); ctx.fill();
+      return [cx + dx, cy + dz];
     };
-    /* 行星（无文明灰、有文明用文明色） */
+    const drawDot = (px, pz, color, r) => {
+      const [x, y] = project(px, pz);
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x, y, r || 3, 0, Math.PI * 2); ctx.fill();
+      return [x, y];
+    };
+    ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+    /* 行星 + 文明标注 */
     for (const b of celestialBodies) {
       if (b.position.distanceTo(rocketOuter.position) > 6000) continue;
       let c = '#7a8a9a';
       if (b.civilization && b.civilization.typeInfo) c = '#' + b.civilization.typeInfo.color.toString(16).padStart(6, '0');
-      draw(b.position.x, b.position.z, c, 2);
+      const [x, y] = drawDot(b.position.x, b.position.z, c, b.civilization ? 3.5 : 2);
+      if (big && b.civilization) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(b.civilization.typeInfo.icon + 'Lv' + b.civilization.devLevel, x, y - 6);
+      }
     }
-    /* 天灾 */
-    for (const bh of blackHoles) if (bh.position.distanceTo(rocketOuter.position) < 8000) draw(bh.position.x, bh.position.z, '#ff5555', 3);
-    for (const ds of darkStorms) if (ds.position.distanceTo(rocketOuter.position) < 8000) draw(ds.position.x, ds.position.z, '#c084fc', 3);
-    for (const gb of gammaBursts) if (gb.origin.distanceTo(rocketOuter.position) < 8000) draw(gb.origin.x, gb.origin.z, '#5affc8', 3);
+    /* 星门 */
+    for (const sg of stargates) drawDot(sg.group.position.x, sg.group.position.z, '#7fd4ff', 2.5);
+    /* 天灾（带类型标注） */
+    for (const bh of blackHoles) if (bh.position.distanceTo(rocketOuter.position) < 8000) {
+      const [x, y] = drawDot(bh.position.x, bh.position.z, '#ff5555', 3);
+      if (big) { ctx.fillStyle = '#ff8888'; ctx.fillText('🕳️ 黑洞', x, y - 7); }
+    }
+    for (const ds of darkStorms) if (ds.position.distanceTo(rocketOuter.position) < 8000) {
+      const [x, y] = drawDot(ds.position.x, ds.position.z, '#c084fc', 3);
+      if (big) { ctx.fillStyle = '#d0a0ff'; ctx.fillText('🌑 暗宙风暴', x, y - 7); }
+    }
+    for (const gb of gammaBursts) if (gb.origin.distanceTo(rocketOuter.position) < 8000) {
+      const [x, y] = drawDot(gb.origin.x, gb.origin.z, '#5affc8', 3);
+      if (big) { ctx.fillStyle = '#8affe0'; ctx.fillText('☢️ 伽马暴', x, y - 7); }
+    }
+    /* 比赛会场 + 群星联邦 */
+    const [vx, vy] = drawDot(COMPETITION_POS.x, COMPETITION_POS.z, '#ffd060', 3.5);
+    if (big) { ctx.fillStyle = '#ffd060'; ctx.fillText('🏆 比赛会场', vx, vy - 7); }
+    if (rocketOuter.position.distanceTo(FEDERATION_POS) < FEDERATION_RADIUS) {
+      const [fx, fy] = drawDot(FEDERATION_POS.x, FEDERATION_POS.z, '#7fd4ff', 3.5);
+      if (big) { ctx.fillStyle = '#7fd4ff'; ctx.fillText('🪐 群星联邦', fx, fy - 7); }
+    }
+    /* 附近事件 / 生命体活动 */
+    for (const ev of nearbyEvents) {
+      if (ev.pos.distanceTo(rocketOuter.position) > 6000) continue;
+      const [x, y] = drawDot(ev.pos.x, ev.pos.z, ev.color, 3);
+      const pulse = 3 + Math.sin(performance.now() * 0.006 + ev.id) * 1;
+      ctx.strokeStyle = ev.color; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x, y, pulse + 2, 0, Math.PI * 2); ctx.stroke();
+      if (big) { ctx.fillStyle = '#ffffff'; ctx.fillText(ev.icon + ev.label, x, y - 7); }
+    }
+    /* 任务追踪目标 */
+    if (trackTarget) {
+      const [x, y] = project(trackTarget.x, trackTarget.z);
+      const isMaster = !!trackTarget.liberation;
+      const col = isMaster ? '#c084fc' : '#ffd060';
+      const pulse = 4 + Math.sin(performance.now() * 0.006) * 1.5;
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, pulse + 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+      if (big && trackTarget.label) { ctx.fillStyle = col; ctx.fillText((isMaster ? '🏰 ' : '') + trackTarget.label, x, y - 8); }
+    }
     /* 好友 + 队友 */
-    for (const [name, f] of ONLINE.friends) if (f.online && f.x != null) draw(f.x, f.z, f.color || '#ffd060', 4);
-    for (const [name, m] of ONLINE.teamMembers) draw(m.x, m.z, '#c4b5fd', 4);
+    for (const [name, f] of ONLINE.friends) if (f.online && f.x != null) drawDot(f.x, f.z, f.color || '#ffd060', 4);
+    for (const [name, m] of ONLINE.teamMembers) drawDot(m.x, m.z, '#c4b5fd', 4);
   }
 
   function animate() {
@@ -8220,6 +9478,13 @@
       updateStars(dt, t);
       updateDamageNumbers(dt);
       updateRandomEvents(dt);
+      updateMines(dt, t);
+      updateMasterBattles(dt, t);
+      updateSkillEffects(dt);
+      updateRifts(dt, t);
+      updateDim35(dt, t);
+      updateTradeShips(dt);
+      updateNearbyEvents(dt, t);
       updateOnline();
       if (gameMode === MODE.FLYING) {
         autoSaveTimer += dt;
@@ -8235,6 +9500,58 @@
     updateShockwaves(dt);
     updateStormWall(dt, t);
     updateCompass();
+    const dV = rocketOuter.position.distanceTo(COMPETITION_POS);
+    const venueVisible = dV < 12000;
+    if (competitionVenue.group) {
+      competitionVenue.group.visible = venueVisible;
+      if (venueVisible) { competitionVenue.ring.rotation.z += dt * 0.5; competitionVenue.halo.material.opacity = 0.5 + Math.sin(t * 1.5) * 0.15; }
+    }
+    if (competitionVenue.crowdGroup) competitionVenue.crowdGroup.visible = venueVisible;
+    if (competitionVenue.spectators && venueVisible) {
+      for (const s of competitionVenue.spectators) {
+        const cheer = Math.max(0, Math.sin(t * 3 - s.a * 1.6 + s.phase));
+        s.sp.position.y = s.baseY + cheer * 3.2;
+        s.sp.material.opacity = 0.5 + cheer * 0.45;
+      }
+    }
+    venueCheerT -= dt;
+    if (venueVisible && dV < 5000 && venueCheerT <= 0) {
+      venueCheerT = 3.5 + Math.random() * 3;
+      Sound.noise(0.6, 0.10, 500);
+      Sound.tone(380 + Math.random() * 240, 0.4, 'triangle', 0.06, 220);
+    }
+    for (const s of raceShips) {
+      s.angle += s.speed * dt;
+      s.mesh.visible = venueVisible;
+      s.mesh.position.set(
+        COMPETITION_POS.x + Math.cos(s.angle) * s.radius,
+        COMPETITION_POS.y + s.y + Math.sin(t * 2 + s.phase) * 4,
+        COMPETITION_POS.z + Math.sin(s.angle) * s.radius
+      );
+      s.mesh.rotation.y = -s.angle;
+    }
+    const sb = document.getElementById('venueScoreboard');
+    if (sb) {
+      if (dV < 2500) {
+        sb.style.display = '';
+        const sl = document.getElementById('venueScoreList');
+        if (sl) {
+          let html = '';
+          const top = RACE_RANKINGS.slice(0, 3);
+          top.forEach((r, i) => { html += '<div>' + ['🥇', '🥈', '🥉'][i] + ' ' + r.name + ' · ' + Math.floor(r.score) + '</div>'; });
+          sl.innerHTML = html;
+        }
+      } else sb.style.display = 'none';
+    }
+    const dF = rocketOuter.position.distanceTo(FEDERATION_POS);
+    const fedVisible = dF < FEDERATION_RADIUS;
+    if (federationHub.group) {
+      federationHub.group.visible = fedVisible;
+      if (fedVisible) { federationHub.ring1.rotation.z += dt * 0.4; federationHub.ring2.rotation.z -= dt * 0.3; federationHub.halo.material.opacity = 0.5 + Math.sin(t * 1.1) * 0.15; }
+    }
+    renderMinimap();
+    if (fullMap.open) renderFullMap();
+    spaceDust.position.copy(rocketOuter.position);
     for (const g of galaxies) g.group.rotation.z += g.spin * dt;
     renderer.render(scene, camera);
   }
@@ -8343,8 +9660,13 @@
       eng.lfo = c.createOscillator(); eng.lfo.type = 'sine'; eng.lfo.frequency.value = 7;
       eng.lfoGain = c.createGain(); eng.lfoGain.gain.value = 0.04;
       eng.lfo.connect(eng.lfoGain); eng.lfoGain.connect(eng.gain.gain);
+      /* 专属引擎低鸣：低频双振子"机械嗡鸣" */
+      eng.hum = c.createOscillator(); eng.hum.type = 'sine'; eng.hum.frequency.value = 55;
+      eng.hum2 = c.createOscillator(); eng.hum2.type = 'triangle'; eng.hum2.frequency.value = 57.4;
+      const humG = c.createGain(); humG.gain.value = 0.07;
+      eng.hum.connect(humG); eng.hum2.connect(humG); humG.connect(eng.gain);
       eng.gain.connect(engineMasterGain);
-      eng.sub.start(); eng.mid.start(); eng.noise.start(); eng.warp.start(); eng.lfo.start();
+      eng.sub.start(); eng.mid.start(); eng.noise.start(); eng.warp.start(); eng.lfo.start(); eng.hum.start(); eng.hum2.start();
     }
     function engineUpdate(speed, warp, active) {
       if (!ctx || !eng) return;
@@ -8425,6 +9747,16 @@
       setVolume, getVolume, musicStart, musicStop,
       collect() { tone(880, 0.18, 'sine', 0.18, 1320); setTimeout(() => tone(1320, 0.22, 'sine', 0.16, 1760), 90); },
       beacon() { tone(220, 0.6, 'sawtooth', 0.2, 440); tone(110, 0.8, 'sine', 0.25, 220); noise(0.5, 0.08, 600); },
+      fire() { tone(1400, 0.10, 'square', 0.15, 260); tone(700, 0.07, 'sawtooth', 0.10, 160); noise(0.08, 0.05, 2400); },
+      laser() { tone(2400, 0.14, 'sawtooth', 0.14, 900); tone(1800, 0.10, 'square', 0.10, 600); noise(0.12, 0.07, 4000); },
+      bomb() { tone(90, 0.5, 'sine', 0.30, 35); tone(160, 0.4, 'sawtooth', 0.12, 60); noise(0.7, 0.18, 180); },
+      forceField() { tone(200, 0.4, 'sine', 0.16, 900); tone(300, 0.35, 'triangle', 0.12, 1200); noise(0.3, 0.08, 800); },
+      aoe() { tone(120, 0.5, 'sawtooth', 0.20, 40); noise(0.6, 0.16, 200); },
+      summon() { tone(500, 0.25, 'triangle', 0.14, 800); tone(700, 0.2, 'sine', 0.10, 1100); },
+      hive() { tone(120, 0.5, 'sine', 0.18, 240); tone(180, 0.4, 'sawtooth', 0.08, 90); noise(0.4, 0.06, 300); },
+      heal() { tone(523, 0.25, 'sine', 0.16); tone(659, 0.3, 'sine', 0.14); tone(784, 0.4, 'sine', 0.14); },
+      shield() { tone(320, 0.4, 'triangle', 0.14, 640); },
+      overload() { tone(120, 0.5, 'square', 0.12, 1200); },
       dialogue() { tone(600, 0.06, 'square', 0.06); },
       land() { noise(0.5, 0.12, 300); tone(180, 0.4, 'sine', 0.15, 90); },
       takeoff() { noise(0.6, 0.12, 400); tone(90, 0.5, 'sine', 0.2, 240); },
@@ -8461,6 +9793,7 @@
         surveyed: [...NARRATIVE.surveyed],
         warpDistance: NARRATIVE.warpDistance,
         karma: NARRATIVE.karma,
+        skills: state.skills,
         pos: rocketOuter.position.toArray(),
         quat: rocketQuat.toArray(),
         beacons: playerBeacons.map(b => ({ name: b.name, bodyName: b.bodyName, dist: b.dist, pos: b.pos.toArray() }))
@@ -8495,6 +9828,7 @@
     NARRATIVE.surveyed = new Set(d.surveyed || []);
     NARRATIVE.warpDistance = d.warpDistance || 0;
     NARRATIVE.karma = d.karma || 0;
+    state.skills = d.skills || { basic: true };
     if (d.pos && d.pos.length === 3) rocketOuter.position.fromArray(d.pos);
     playerBeacons.length = 0;
     (d.beacons || []).forEach(b => playerBeacons.push({ name: b.name, bodyName: b.bodyName, dist: b.dist, pos: new THREE.Vector3().fromArray(b.pos) }));
@@ -8654,6 +9988,346 @@
     { key: 'collect', name: '磁场收集器', icon: '🧲', max: 5, cost: [500, 1200, 2800, 6000, 11000], desc: '扩大漂流瓶收集范围（+30%/级）' },
     { key: 'score', name: '觉醒增幅', icon: '✨', max: 5, cost: [900, 2200, 5000, 10000, 18000], desc: '提高觉醒度获取（+25%/级）' }
   ];
+  /* ================================================================
+      三十·五、玩家技能（基础攻击 + 高科技：可购买 / 文明授予）
+   ================================================================ */
+  const SKILL_DEFS = [
+    { key: 'basic', name: '基础炮', icon: '🔫', color: '#66aaff', desc: '基础能量炮（始终可用）', cooldown: 0.3, cost: 0 },
+    { key: 'forceField', name: '力场', icon: '🛡️', color: '#7fd4ff', desc: '推开附近威胁并造成范围伤害', cooldown: 8, cost: 4500 },
+    { key: 'laser', name: '聚焦激光', icon: '⚡', color: '#7affa0', desc: '瞬间贯穿的高能激光', cooldown: 6, cost: 6000 },
+    { key: 'darkMatter', name: '暗物质炸弹', icon: '🌑', color: '#c084fc', desc: '发射大范围毁灭炸弹', cooldown: 15, cost: 9000 }
+  ];
+  const skillCooldowns = {};
+  const darkBombs = [];
+  const laserBeams = [];
+  const playerMinions = [];
+  const playerHives = [];
+  const RACE_SKILLS = {
+    hive: { name: '虫巢意志', icon: '🐛', color: '#facc15', desc: '释放压缩虫巢，2分钟内持续孵化虫兵；战斗中吸收对手基因进化', cooldown: 40, type: 'hive' },
+    mechanical: { name: '机械分身', icon: '🤖', color: '#94a3b8', desc: '召唤3架机械分身协同作战', cooldown: 25, type: 'summon', count: 3, atk: 6, life: 45, geo: 'octa' },
+    fungal: { name: '孢子感染', icon: '🍄', color: '#84cc16', desc: '召唤4只寄生孢子腐蚀敌人', cooldown: 22, type: 'summon', count: 4, atk: 5, life: 35, geo: 'sphere' },
+    carbon: { name: '生物共生体', icon: '🧬', color: '#4ade80', desc: '召唤共生体并恢复生命', cooldown: 25, type: 'bio', count: 2, atk: 4, life: 40, geo: 'sphere' },
+    floral: { name: '生命绽放', icon: '🌸', color: '#f472b6', desc: '生命能量绽放，范围治疗', cooldown: 24, type: 'bloom' },
+    aquatic: { name: '深渊潮汐', icon: '🌊', color: '#38bdf8', desc: '召唤潮汐冲击波', cooldown: 20, type: 'aoe', dmg: 45, radius: 320 },
+    silicon: { name: '纳米重构', icon: '🔩', color: '#a78bfa', desc: '纳米机器人重构船体护盾', cooldown: 26, type: 'shield' },
+    plasma: { name: '等离子风暴', icon: '🔥', color: '#ff6b6b', desc: '释放等离子风暴灼烧周围', cooldown: 20, type: 'aoe', dmg: 55, radius: 300 },
+    energy: { name: '能量过载', icon: '✨', color: '#fbbf24', desc: '能量过载，强化攻击与速度', cooldown: 22, type: 'overload' },
+    ice: { name: '绝对零度', icon: '❄️', color: '#67e8f9', desc: '冻结周围威胁', cooldown: 20, type: 'aoe', dmg: 30, radius: 300, freeze: true },
+    void: { name: '虚空吞噬', icon: '🌑', color: '#7c3aed', desc: '召唤微型虚空吞噬敌人', cooldown: 26, type: 'aoe', dmg: 60, radius: 380 },
+    gamma: { name: '伽马脉冲', icon: '☢️', color: '#22d3a8', desc: '释放伽马脉冲大范围伤害', cooldown: 22, type: 'aoe', dmg: 70, radius: 400 },
+    gravitic: { name: '引力井', icon: '🕳️', color: '#0ea5e9', desc: '制造引力井禁锢并拉扯敌人', cooldown: 24, type: 'aoe', dmg: 35, radius: 360, freeze: true },
+    photon: { name: '光子风暴', icon: '💫', color: '#f0abfc', desc: '发射光子风暴贯穿敌人', cooldown: 22, type: 'aoe', dmg: 60, radius: 340 }
+  };
+  function summonPlayerMinions(count, colorHex, atk, life, geoKey) {
+    for (let i = 0; i < count; i++) {
+      const geo = geoKey === 'octa' ? new THREE.OctahedronGeometry(2.2, 0) : new THREE.SphereGeometry(2.2, 8, 6);
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const a = Math.random() * Math.PI * 2;
+      m.position.copy(rocketOuter.position).add(new THREE.Vector3(Math.cos(a) * 8, (Math.random() - 0.5) * 6, Math.sin(a) * 8));
+      scene.add(m);
+      playerMinions.push({ mesh: m, color: colorHex, atk, atkT: 0, orbitAngle: a, orbitRadius: 12 + Math.random() * 10, life, hive: null, evolved: false });
+    }
+  }
+  function spawnHive() {
+    const hive = new THREE.Mesh(new THREE.SphereGeometry(3, 12, 8), new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    hive.position.copy(rocketOuter.position);
+    scene.add(hive);
+    playerHives.push({ mesh: hive, life: 120, spawnT: 2, growT: 0 });
+    showToast('🐛 虫巢已释放，正在成长……');
+  }
+  function summonHiveBug(hive, atk, colorHex, evolved) {
+    const m = new THREE.Mesh(new THREE.OctahedronGeometry(2.4, 0), new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.position.copy(hive.position);
+    scene.add(m);
+    playerMinions.push({ mesh: m, color: colorHex, atk, atkT: 0, orbitAngle: Math.random() * 6.28, orbitRadius: 10 + Math.random() * 12, life: 45, hive, evolved });
+  }
+  let skillBarTimer = 0;
+  function updatePlayerMinions(dt) {
+    for (let i = playerMinions.length - 1; i >= 0; i--) {
+      const m = playerMinions[i];
+      m.life -= dt;
+      m.orbitAngle += dt * 1.5;
+      const anchor = m.hive || rocketOuter.position;
+      const dx = Math.cos(m.orbitAngle) * m.orbitRadius;
+      const dz = Math.sin(m.orbitAngle) * m.orbitRadius;
+      const dy = Math.sin(m.orbitAngle * 2) * 3;
+      m.mesh.position.lerp(new THREE.Vector3(anchor.x + dx, anchor.y + dy, anchor.z + dz), Math.min(1, 3 * dt));
+      m.mesh.rotation.y += dt * 3;
+      m.atkT -= dt;
+      if (m.atkT <= 0 && activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+        const mb = activeMasterBattle.masterBase;
+        if (m.mesh.position.distanceTo(mb.group.position) < 420) {
+          mb.hp = Math.max(0, mb.hp - m.atk); mb.flashT = 0.1;
+          spawnDamageNumber(mb.group.position.clone(), '-' + m.atk, '#' + m.color.toString(16).padStart(6, '0'));
+          m.atkT = 1.2;
+          if (mb.hp <= 0) { mb.alive = false; createExplosion(mb.group.position, 0xc084fc); showLiberationChoice(mb.body); activeMasterBattle = null; }
+        }
+      }
+      if (m.life <= 0) { scene.remove(m.mesh); m.mesh.geometry.dispose(); m.mesh.material.dispose(); playerMinions.splice(i, 1); }
+    }
+  }
+  function updatePlayerHives(dt) {
+    for (let i = playerHives.length - 1; i >= 0; i--) {
+      const h = playerHives[i];
+      h.life -= dt;
+      h.growT += dt;
+      h.mesh.scale.setScalar(Math.min(1.7, 0.4 + h.growT * 0.4));
+      h.mesh.rotation.y += dt * 1.2;
+      h.mesh.position.lerp(rocketOuter.position.clone().add(new THREE.Vector3(7, 2, -7)), Math.min(1, 1.5 * dt));
+      h.spawnT -= dt;
+      if (h.spawnT <= 0) {
+        h.spawnT = 3.5;
+        const combat = !!(activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive);
+        summonHiveBug(h, combat ? 12 : 3, combat ? 0xff6b6b : 0xfacc15, combat);
+        if (combat) showToast('🐛 虫巢吸收对手基因，孵化出进化虫兵！');
+      }
+      if (h.life <= 0) { scene.remove(h.mesh); h.mesh.geometry.dispose(); h.mesh.material.dispose(); playerHives.splice(i, 1); showToast('虫巢消散了'); }
+    }
+  }
+  function castAoeSkill(dmg, colorHex, radius, freeze) {
+    const rp = rocketOuter.position;
+    createExplosion(rp, colorHex);
+    for (const b of celestialBodies) {
+      if (!b.mine || !b.mine.masterBase) continue;
+      const mb = b.mine.masterBase;
+      if (mb.alive && mb.group.position.distanceTo(rp) < radius) {
+        mb.hp = Math.max(0, mb.hp - dmg); mb.flashT = 0.15;
+        spawnDamageNumber(mb.group.position.clone(), '-' + dmg, '#' + colorHex.toString(16).padStart(6, '0'));
+        if (mb.hp <= 0) { mb.alive = false; createExplosion(mb.group.position, 0xc084fc); showLiberationChoice(mb.body); activeMasterBattle = null; }
+      }
+      for (let i = mb.projectiles.length - 1; i >= 0; i--) {
+        const p = mb.projectiles[i];
+        if (p.mesh.position.distanceTo(rp) < radius) {
+          scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+          mb.projectiles.splice(i, 1);
+        }
+      }
+    }
+    if (freeze && activeMasterBattle && activeMasterBattle.masterBase) activeMasterBattle.masterBase.shootT = Math.max(activeMasterBattle.masterBase.shootT, 3);
+  }
+  function castRaceSkill(raceKey) {
+    const rs = RACE_SKILLS[raceKey];
+    if (!rs) return;
+    const colorHex = new THREE.Color(rs.color).getHex();
+    switch (rs.type) {
+      case 'hive': spawnHive(); Sound.hive(); break;
+      case 'summon': summonPlayerMinions(rs.count, colorHex, rs.atk, rs.life, rs.geo); Sound.summon(); break;
+      case 'bio': summonPlayerMinions(rs.count, colorHex, rs.atk, rs.life, rs.geo); state.hp = Math.min(state.maxHp, state.hp + 20); updateHpBar(); Sound.heal(); break;
+      case 'bloom': state.hp = Math.min(state.maxHp, state.hp + 40); updateHpBar(); createExplosion(rocketOuter.position, colorHex); Sound.heal(); break;
+      case 'shield': state.invulnTime = Math.max(state.invulnTime, 8); Sound.shield(); break;
+      case 'overload': state.speedBuffTime = Math.max(state.speedBuffTime, 15); Sound.overload(); break;
+      case 'aoe': castAoeSkill(rs.dmg, colorHex, rs.radius, !!rs.freeze); Sound.aoe(); break;
+    }
+  }
+  function skillNameAndIcon(key) {
+    if (key.indexOf('race_') === 0) { const rs = RACE_SKILLS[key.slice(5)]; return rs ? { icon: rs.icon, name: rs.name } : null; }
+    const sk = SKILL_DEFS.find(s => s.key === key);
+    return sk ? { icon: sk.icon, name: sk.name } : null;
+  }
+  function getSkillList() {
+    const list = SKILL_DEFS.map(s => s);
+    for (const raceKey of Object.keys(RACE_SKILLS)) {
+      const key = 'race_' + raceKey;
+      if (skillOwned(key)) list.push(Object.assign({ key }, RACE_SKILLS[raceKey]));
+    }
+    return list;
+  }
+  function useSkillByIndex(idx) {
+    const sk = getSkillList()[idx];
+    if (sk) useSkill(sk.key);
+  }
+  function skillOwned(key) { return !!(state.skills && state.skills[key]); }
+  function grantSkill(key, silent) {
+    if (skillOwned(key)) return false;
+    state.skills = state.skills || { basic: true };
+    state.skills[key] = true;
+    if (!silent) { const info = skillNameAndIcon(key); if (info) showToast(info.icon + ' 获得新技能：' + info.name); Sound.quest(); }
+    renderSkillBar();
+    return true;
+  }
+  function grantRandomSkill() {
+    const pool = SKILL_DEFS.filter(s => s.key !== 'basic' && !skillOwned(s.key));
+    if (!pool.length) return;
+    grantSkill(pool[Math.floor(Math.random() * pool.length)].key);
+  }
+  function useSkill(key) {
+    if (key.indexOf('race_') === 0) {
+      const raceKey = key.slice(5);
+      const rs = RACE_SKILLS[raceKey];
+      if (!rs) return;
+      if (!skillOwned(key)) { showToast('🔒 尚未获得该技能：' + rs.name); return; }
+      const now = performance.now() / 1000;
+      if (skillCooldowns[key] && now < skillCooldowns[key]) return;
+      skillCooldowns[key] = now + rs.cooldown;
+      castRaceSkill(raceKey);
+      renderSkillBar();
+      return;
+    }
+    const sk = SKILL_DEFS.find(s => s.key === key);
+    if (!sk) return;
+    if (!skillOwned(key)) { showToast('🔒 尚未获得该技能：' + sk.name); return; }
+    const now = performance.now() / 1000;
+    if (skillCooldowns[key] && now < skillCooldowns[key]) return;
+    skillCooldowns[key] = now + sk.cooldown;
+    switch (key) {
+      case 'basic': firePlayerWeapon(); break;
+      case 'forceField': castForceField(); break;
+      case 'laser': fireLaser(); break;
+      case 'darkMatter': fireDarkMatter(); break;
+    }
+    renderSkillBar();
+  }
+
+  function castForceField() {
+    const rp = rocketOuter.position;
+    createExplosion(rp, 0x7fd4ff);
+    for (const b of celestialBodies) {
+      if (!b.mine || !b.mine.masterBase) continue;
+      const mb = b.mine.masterBase;
+      for (let i = mb.projectiles.length - 1; i >= 0; i--) {
+        const p = mb.projectiles[i];
+        if (p.mesh.position.distanceTo(rp) < 200) {
+          scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+          mb.projectiles.splice(i, 1);
+        }
+      }
+      if (mb.alive && mb.group.position.distanceTo(rp) < 300) {
+        mb.hp = Math.max(0, mb.hp - 25); mb.flashT = 0.15;
+        spawnDamageNumber(mb.group.position.clone(), '-25', '#7fd4ff');
+        if (mb.hp <= 0) { mb.alive = false; createExplosion(mb.group.position, 0xc084fc); showLiberationChoice(mb.body); activeMasterBattle = null; }
+      }
+    }
+    Sound.forceField();
+  }
+  function fireDarkMatter() {
+    const origin = rocketOuter.position.clone();
+    let target = null;
+    if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+      target = activeMasterBattle.masterBase.group.position.clone();
+    }
+    const dir = target ? target.sub(origin).normalize() : getRocketForward(new THREE.Vector3());
+    const bomb = new THREE.Mesh(new THREE.SphereGeometry(8, 12, 8),
+      new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
+    bomb.position.copy(origin);
+    scene.add(bomb);
+    darkBombs.push({ mesh: bomb, dir, speed: 170, life: 7 });
+    Sound.bomb();
+  }
+  function fireLaser() {
+    const origin = rocketOuter.position.clone();
+    let target = null;
+    if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+      target = activeMasterBattle.masterBase.group.position.clone();
+    }
+    const dir = target ? target.sub(origin).normalize() : getRocketForward(new THREE.Vector3());
+    const end = target ? target.clone() : origin.clone().addScaledVector(dir, 500);
+    const geo = new THREE.BufferGeometry().setFromPoints([origin, end]);
+    const mat = new THREE.LineBasicMaterial({ color: 0x7affa0, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+    const line = new THREE.Line(geo, mat);
+    scene.add(line);
+    laserBeams.push({ line, life: 0.25, maxLife: 0.25 });
+    if (target && activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+      const mb = activeMasterBattle.masterBase;
+      if (origin.distanceTo(mb.group.position) < 550) {
+        mb.hp = Math.max(0, mb.hp - 40); mb.flashT = 0.15;
+        spawnDamageNumber(mb.group.position.clone(), '-40', '#7affa0');
+        createExplosion(mb.group.position, 0x7affa0);
+        if (mb.hp <= 0) { mb.alive = false; createExplosion(mb.group.position, 0xc084fc); showLiberationChoice(mb.body); activeMasterBattle = null; }
+      }
+    }
+    Sound.laser();
+  }
+  function updateSkillEffects(dt) {
+    for (let i = darkBombs.length - 1; i >= 0; i--) {
+      const b = darkBombs[i];
+      b.mesh.position.addScaledVector(b.dir, b.speed * dt);
+      b.life -= dt;
+      let exploded = false;
+      if (activeMasterBattle && activeMasterBattle.masterBase && activeMasterBattle.masterBase.alive) {
+        const mb = activeMasterBattle.masterBase;
+        if (b.mesh.position.distanceTo(mb.group.position) < 45) {
+          mb.hp = Math.max(0, mb.hp - 60); mb.flashT = 0.2;
+          spawnDamageNumber(mb.group.position.clone(), '-60', '#c084fc');
+          createExplosion(mb.group.position, 0xc084fc);
+          exploded = true;
+          if (mb.hp <= 0) { mb.alive = false; createExplosion(mb.group.position, 0xc084fc); showLiberationChoice(mb.body); activeMasterBattle = null; }
+        }
+      }
+      if (exploded || b.life <= 0) {
+        if (!exploded) createExplosion(b.mesh.position, 0xc084fc);
+        scene.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose();
+        darkBombs.splice(i, 1);
+      }
+    }
+    for (let i = laserBeams.length - 1; i >= 0; i--) {
+      const lb = laserBeams[i];
+      lb.life -= dt;
+      lb.line.material.opacity = Math.max(0, lb.life / lb.maxLife);
+      if (lb.life <= 0) {
+        scene.remove(lb.line); lb.line.geometry.dispose(); lb.line.material.dispose();
+        laserBeams.splice(i, 1);
+      }
+    }
+    updatePlayerMinions(dt);
+    updatePlayerHives(dt);
+    skillBarTimer -= dt;
+    if (skillBarTimer <= 0) { skillBarTimer = 0.2; renderSkillBar(); }
+  }
+
+  function renderSkillBar() {
+    const bar = document.getElementById('skillBar');
+    if (!bar) return;
+    bar.innerHTML = '';
+    const now = performance.now() / 1000;
+    getSkillList().forEach((sk, idx) => {
+      const owned = skillOwned(sk.key);
+      const cdRemain = skillCooldowns[sk.key] ? Math.max(0, skillCooldowns[sk.key] - now) : 0;
+      const slot = document.createElement('div');
+      slot.style.cssText = 'position:relative;width:54px;height:54px;border-radius:12px;background:rgba(10,18,38,.85);border:1px solid ' + (owned ? sk.color : 'rgba(120,140,170,.35)') + ';display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;overflow:hidden;';
+      slot.title = sk.name + '：' + sk.desc + (owned ? '' : '（未获得）');
+      slot.innerHTML = '<span style="' + (owned ? '' : 'filter:grayscale(1);opacity:.45;') + '">' + (owned ? sk.icon : '🔒') + '</span>' +
+        '<span style="position:absolute;bottom:3px;right:6px;font-size:10px;color:#9fb6d8;">' + (idx + 1) + '</span>';
+      if (cdRemain > 0) {
+        const pct = Math.min(100, (cdRemain / sk.cooldown) * 100);
+        const mask = document.createElement('div');
+        mask.style.cssText = 'position:absolute;left:0;bottom:0;width:100%;height:' + pct.toFixed(0) + '%;background:rgba(0,0,0,.55);pointer-events:none;';
+        slot.appendChild(mask);
+      }
+      slot.addEventListener('click', () => useSkill(sk.key));
+      bar.appendChild(slot);
+    });
+  }
+  function buySkill(key) {
+    const sk = SKILL_DEFS.find(s => s.key === key);
+    if (!sk || skillOwned(key)) return;
+    if (state.score < sk.cost) { showToast('⚠️ 觉醒度不足，无法购买'); return; }
+    state.score -= sk.cost;
+    grantSkill(key, true);
+    showToast(sk.icon + ' 已购得技能：' + sk.name);
+    renderSkillShop();
+  }
+  function renderSkillShop() {
+    const list = document.getElementById('skillList');
+    if (!list) return;
+    list.innerHTML = '';
+    SKILL_DEFS.forEach(sk => {
+      if (sk.key === 'basic') return;
+      const owned = skillOwned(sk.key);
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML =
+        '<div class="upg-icon">' + sk.icon + '</div>' +
+        '<div class="upg-body"><div class="upg-name">' + sk.name + '</div>' +
+        '<div class="upg-desc">' + sk.desc + '</div>' +
+        '<div class="upg-cost">' + (owned ? '已拥有' : '购买消耗：' + sk.cost + ' 觉醒度') + '</div></div>' +
+        '<button class="upg-btn" data-key="' + sk.key + '"' + (owned ? ' disabled' : '') + '>' + (owned ? '已购' : '购买') + '</button>';
+      list.appendChild(row);
+    });
+    Array.prototype.forEach.call(list.querySelectorAll('.upg-btn[data-key]'), btn => {
+      btn.addEventListener('click', () => buySkill(btn.getAttribute('data-key')));
+    });
+  }
+
   function renderUpgrades() {
     const list = document.getElementById('upgradeList');
     if (!list) return;
@@ -8948,24 +10622,33 @@
     if (ch < 0) {
       h += '<div class="guide-row">等待发射：在地球上按 E 发射升空</div>';
     } else if (ch < CHAPTERS.length) {
-      h += '<div class="guide-row">' + CHAPTERS[ch].name + '：' + CHAPTERS[ch].desc + '</div>';
+      h += '<div class="guide-row" data-quest="main">' + CHAPTERS[ch].name + '：' + CHAPTERS[ch].desc + '</div>';
     }
     h += '<div class="guide-tip">💡 主线推进：靠近有文明的行星按 E 降落 → 按 F 对话。集齐七种问候→寻找星系文明(Lv4)→激活三处方舟碎片(真言)→前往银河核心→最终选择。</div>';
     h += '<div class="guide-sec">🧭 支线任务</div>';
-    h += '<div class="guide-row">🍾 星际漂流瓶：收集 8 个漂流瓶（' + NARRATIVE.bottlesCollected + '/8）</div>';
-    h += '<div class="guide-row">🎵 七音之约：与 7 种文明对话（' + NARRATIVE.greetings.size + '/7）</div>';
-    h += '<div class="guide-row">🗺️ 星际测绘：降落 12 个不同行星（' + NARRATIVE.surveyed.size + '/12）</div>';
+    h += '<div class="guide-row" data-quest="bottle">🍾 星际漂流瓶：收集 8 个漂流瓶（' + NARRATIVE.bottlesCollected + '/8）</div>';
+    h += '<div class="guide-row" data-quest="civ">🎵 七音之约：与 7 种文明对话（' + NARRATIVE.greetings.size + '/7）</div>';
+    h += '<div class="guide-row" data-quest="survey">🗺️ 星际测绘：降落 12 个不同行星（' + NARRATIVE.surveyed.size + '/12）</div>';
     h += '<div class="guide-row">⚡ 曲速先驱：曲速飞行 30000（' + Math.floor(NARRATIVE.warpDistance) + '/30000）</div>';
-    h += '<div class="guide-row">🤝 文明外交官：与 8 种文明对话（' + NARRATIVE.greetings.size + '/8）</div>';
+    h += '<div class="guide-row" data-quest="civ">🤝 文明外交官：与 8 种文明对话（' + NARRATIVE.greetings.size + '/8）</div>';
     h += '<div class="guide-row">🛰️ 深空信使：飞行 50000（' + Math.floor(state.distance) + '/50000）</div>';
-    h += '<div class="guide-row">🔭 巨构观测：接触一个星系文明(Lv4)</div>';
-    h += '<div class="guide-row">🏠 归乡之路：集齐三段真言后返回地球降落</div>';
+    h += '<div class="guide-row" data-quest="megastruct">🔭 巨构观测：接触一个星系文明(Lv4)</div>';
+    h += '<div class="guide-row" data-quest="home">🏠 归乡之路：集齐三段真言后返回地球降落</div>';
     h += '<div class="guide-tip">💡 支线方法：漂流瓶/信标在太空中发光，靠近按 E 收集/激活；降落新行星计入测绘；按住 Shift 曲速飞行计入曲速先驱与深空信使。</div>';
+    h += '<div class="guide-sec">🏆 宇宙种族榜（前 100 拥有矿奴 · 前 10 分配资源）</div>';
+    for (let i = 0; i < 10; i++) {
+      const r = RACE_RANKINGS[i];
+      h += '<div class="guide-row">' + r.rank + '. ' + r.name + ' · 分配 ' + Math.round(raceDistribution(r.rank) * 100) + '%</div>';
+    }
     h += '<div class="guide-sec">🏆 成就指引（如何完成）</div>';
     for (const a of ACHIEVEMENTS) {
       h += '<div class="guide-row">' + a.icon + ' ' + a.name + '：' + a.desc + (meta.achievements[a.id] ? ' ✅' : '') + '</div>';
     }
     el.innerHTML = h;
+    el.querySelectorAll('[data-quest]').forEach(row => {
+      row.title = '双击追踪此任务';
+      row.addEventListener('dblclick', () => trackQuest(row.getAttribute('data-quest')));
+    });
   }
 
   /* ================================================================
@@ -9045,10 +10728,23 @@
   });
   document.getElementById('shopBtn').addEventListener('click', () => {
     renderShop();
+    renderSkillShop();
     document.getElementById('shopModal').classList.add('show');
   });
   document.getElementById('shopClose').addEventListener('click', () => {
     document.getElementById('shopModal').classList.remove('show');
+  });
+  document.getElementById('stargateClose').addEventListener('click', () => {
+    document.getElementById('stargateModal').classList.remove('show');
+  });
+  document.getElementById('federationClose').addEventListener('click', () => {
+    document.getElementById('federationModal').classList.remove('show');
+  });
+  document.getElementById('ecoClose').addEventListener('click', () => {
+    document.getElementById('ecoView').style.display = 'none';
+  });
+  document.getElementById('darkGodClose').addEventListener('click', () => {
+    document.getElementById('darkGodModal').classList.remove('show');
   });
   document.getElementById('starMapBtn').addEventListener('click', () => {
     renderStarMap();
@@ -9101,12 +10797,67 @@
   if (modeSingle) modeSingle.addEventListener('click', () => setGameMode('single'));
   if (modeMulti) modeMulti.addEventListener('click', () => setGameMode('multi'));
 
+  const fullMap = { open: false, cx: 0, cy: 0, scale: 0.1, dragging: false, lx: 0, ly: 0, hits: [] };
+  function renderFullMap() {
+    const cv = document.getElementById('fullMapCanvas');
+    if (!cv) return;
+    const W = cv.width = innerWidth, H = cv.height = innerHeight;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
+    bg.addColorStop(0, '#0a1230'); bg.addColorStop(1, '#04070f');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const cx = W / 2 + fullMap.cx, cy = H / 2 + fullMap.cy, scale = fullMap.scale;
+    ctx.strokeStyle = 'rgba(140,180,255,.08)';
+    const g = 100;
+    for (let x = ((cx % g) + g) % g; x < W; x += g) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = ((cy % g) + g) % g; y < H; y += g) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+    const pr = (px, pz) => [cx + (px - rocketOuter.position.x) * scale, cy + (pz - rocketOuter.position.z) * scale];
+    ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    fullMap.hits = [];
+    for (const b of celestialBodies) {
+      const [x, y] = pr(b.position.x, b.position.z);
+      if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue;
+      let c = '#7a8a9a';
+      if (b.civilization && b.civilization.typeInfo) c = '#' + b.civilization.typeInfo.color.toString(16).padStart(6, '0');
+      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, b.civilization ? 6 : 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = b.civilization ? '#fff' : '#9fb0c8';
+      ctx.fillText(b.civilization ? (b.civilization.typeInfo.icon + b.civilization.typeInfo.name + ' Lv' + b.civilization.devLevel) : b.name, x, y - 9);
+      fullMap.hits.push({ x, y, body: b });
+    }
+    for (const sg of stargates) { const [x, y] = pr(sg.group.position.x, sg.group.position.z); if (x < 0 || x > W || y < 0 || y > H) continue; ctx.fillStyle = '#7fd4ff'; ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); }
+    for (const bh of blackHoles) { const [x, y] = pr(bh.position.x, bh.position.z); if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue; ctx.fillStyle = '#ff5555'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ff8888'; ctx.fillText('🕳️ 黑洞', x, y - 9); fullMap.hits.push({ x, y, track: { x: bh.position.x, y: bh.position.y, z: bh.position.z, label: '🕳️ 黑洞' } }); }
+    for (const ds of darkStorms) { const [x, y] = pr(ds.position.x, ds.position.z); if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue; ctx.fillStyle = '#c084fc'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#d0a0ff'; ctx.fillText('🌑 暗宙风暴', x, y - 9); fullMap.hits.push({ x, y, track: { x: ds.position.x, y: ds.position.y, z: ds.position.z, label: '🌑 暗宙风暴' } }); }
+    for (const gb of gammaBursts) { const [x, y] = pr(gb.origin.x, gb.origin.z); if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue; ctx.fillStyle = '#5affc8'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#8affe0'; ctx.fillText('☢️ 伽马暴', x, y - 9); fullMap.hits.push({ x, y, track: { x: gb.origin.x, y: gb.origin.y, z: gb.origin.z, label: '☢️ 伽马暴' } }); }
+    { const [x, y] = pr(COMPETITION_POS.x, COMPETITION_POS.z); ctx.fillStyle = '#ffd060'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffd060'; ctx.fillText('🏆 比赛会场', x, y - 12); fullMap.hits.push({ x, y, track: { x: COMPETITION_POS.x, y: COMPETITION_POS.y, z: COMPETITION_POS.z, label: '🏆 比赛会场' } }); }
+    if (rocketOuter.position.distanceTo(FEDERATION_POS) < FEDERATION_RADIUS) { const [x, y] = pr(FEDERATION_POS.x, FEDERATION_POS.z); ctx.fillStyle = '#7fd4ff'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#7fd4ff'; ctx.fillText('🪐 群星联邦', x, y - 12); fullMap.hits.push({ x, y, track: { x: FEDERATION_POS.x, y: FEDERATION_POS.y, z: FEDERATION_POS.z, label: '🪐 群星联邦' } }); }
+    for (const ev of nearbyEvents) {
+      const [x, y] = pr(ev.pos.x, ev.pos.z);
+      if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue;
+      const pulse = 5 + Math.sin(performance.now() * 0.006 + ev.id) * 1.5;
+      ctx.strokeStyle = ev.color; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, pulse + 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = ev.color; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.fillText(ev.icon + ev.label, x, y - 10);
+      fullMap.hits.push({ x, y, event: ev });
+    }
+    if (trackTarget) {
+      const [x, y] = pr(trackTarget.x, trackTarget.z);
+      const isMaster = !!trackTarget.liberation;
+      const col = isMaster ? '#c084fc' : '#ffd060';
+      ctx.strokeStyle = col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 8 + Math.sin(performance.now() * 0.006) * 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillText((isMaster ? '🏰 ' : '') + trackTarget.label, x, y - 12);
+    }
+    for (const [name, f] of ONLINE.friends) if (f.online && f.x != null) { const [x, y] = pr(f.x, f.z); ctx.fillStyle = f.color || '#ffd060'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(name, x, y - 8); }
+    for (const [name, m] of ONLINE.teamMembers) { const [x, y] = pr(m.x, m.z); ctx.fillStyle = '#c4b5fd'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); }
+  }
   function toggleMinimap() {
-    const mm = document.getElementById('minimap');
-    if (!mm) return;
-    ONLINE.minimapBig = !ONLINE.minimapBig;
-    mm.style.width = (ONLINE.minimapBig ? 340 : 170) + 'px';
-    mm.style.height = (ONLINE.minimapBig ? 340 : 170) + 'px';
+    fullMap.open = !fullMap.open;
+    document.getElementById('fullMap').style.display = fullMap.open ? '' : 'none';
+    if (fullMap.open) renderFullMap();
   }
   const chatInput = document.getElementById('chatInput');
   if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendChat(); } });
@@ -9161,6 +10912,50 @@
   if (leaveTeamBtn) leaveTeamBtn.addEventListener('click', () => sendOnline('team', { action: 'leave' }));
   const minimapEl = document.getElementById('minimap');
   if (minimapEl) minimapEl.addEventListener('click', toggleMinimap);
+  const fullMapCanvas = document.getElementById('fullMapCanvas');
+  if (fullMapCanvas) {
+    fullMapCanvas.addEventListener('mousedown', e => { fullMap.dragging = true; fullMap.lx = e.clientX; fullMap.ly = e.clientY; });
+    addEventListener('mousemove', e => { if (fullMap.dragging) { fullMap.cx += e.clientX - fullMap.lx; fullMap.cy += e.clientY - fullMap.ly; fullMap.lx = e.clientX; fullMap.ly = e.clientY; renderFullMap(); } });
+    addEventListener('mouseup', () => { fullMap.dragging = false; });
+    fullMapCanvas.addEventListener('wheel', e => { e.preventDefault(); fullMap.scale *= (e.deltaY < 0 ? 1.1 : 0.9); fullMap.scale = Math.max(0.02, Math.min(2, fullMap.scale)); renderFullMap(); });
+    fullMapCanvas.addEventListener('click', e => {
+      if (!fullMap.open) return;
+      const rect = fullMapCanvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      let best = null, bd = 22;
+      for (const h of fullMap.hits) {
+        const d = Math.hypot(h.x - mx, h.y - my);
+        if (d < bd) { bd = d; best = h; }
+      }
+      if (best) {
+        if (best.track) {
+          if (trackTarget && trackTarget.label === best.track.label) trackTarget = null;
+          else trackTarget = best.track;
+          showToast(trackTarget ? '🎯 正在追踪：' + best.track.label : '🛑 已取消追踪');
+        } else if (best.event) {
+          if (trackTarget && trackTarget.event === best.event) {
+            trackTarget = null;
+            showToast('🛑 已取消追踪事件：' + best.event.label);
+          } else {
+            trackTarget = { x: best.event.pos.x, y: best.event.pos.y, z: best.event.pos.z, label: best.event.icon + best.event.label, event: best.event };
+            showToast('🎯 正在追踪事件：' + best.event.label);
+          }
+        } else {
+          if (trackTarget && trackTarget.body === best.body) {
+            trackTarget = null;
+            showToast('🛑 已取消追踪行星：' + best.body.name);
+          } else {
+            trackTarget = { x: best.body.position.x, y: best.body.position.y, z: best.body.position.z, label: best.body.name, body: best.body };
+            showToast('🎯 正在追踪行星：' + best.body.name);
+          }
+        }
+        Sound.beacon();
+        toggleMinimap();
+      }
+    });
+  }
+  const fullMapClose = document.getElementById('fullMapClose');
+  if (fullMapClose) fullMapClose.addEventListener('click', toggleMinimap);
   const chatToggleBtn = document.getElementById('chatToggleBtn');
   const friendToggleBtn = document.getElementById('friendToggleBtn');
   if (chatToggleBtn) chatToggleBtn.addEventListener('click', () => { const p = document.getElementById('chatPanel'); if (p) p.style.display = p.style.display === 'none' ? '' : 'none'; });
@@ -9172,6 +10967,13 @@
   camera.lookAt(0, EARTH_RADIUS, 0);
   initCodex();
   renderAchievements();
+  updateRaceUI();
+  renderSkillBar();
+  renderSkillShop();
+  createCompetitionVenue();
+  createFederationHub();
+  initVenueRace();
+  createDim35();
   updateQualityButtons();
   updateContinueBtn();
   createStormWall();
