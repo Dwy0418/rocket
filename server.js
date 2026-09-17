@@ -68,7 +68,7 @@ wss.on('connection', (ws) => {
     if (!p) return;
 
     if (d.type === 'join') {
-      const name = (d.name || '旅人').slice(0, 16);
+      const name = String(d.name || '旅人').trim().slice(0, 16);
       const existing = byName(name);
       if (existing && existing !== ws.id) { send(ws, { type: 'nameTaken', name }); return; }
       p.name = name;
