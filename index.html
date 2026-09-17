@@ -923,6 +923,19 @@
     <h3>👁️ 黑神 · 暗黑国度</h3>
     <div style="font-size:12px;color:#b8a0e0;margin-bottom:8px;">「欢迎来到我的维度，异界旅人。」</div>
     <div id="darkGodList"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button id="settleBtn" class="upg-btn" style="flex:1;">🏠 定居于此</button>
+      <button id="returnHomeBtn" class="upg-btn" style="flex:1;">🏠 返回定居点</button>
+    </div>
+  </div>
+</div>
+
+<div id="darkHomeModal" class="modal">
+  <div class="card">
+    <button class="close-btn" id="darkHomeClose">✕</button>
+    <h3>🏠 暗黑之家</h3>
+    <div id="darkHomeInfo" style="font-size:12px;color:#b8a0e0;margin-bottom:8px;">-</div>
+    <div id="darkHomeList"></div>
   </div>
 </div>
 
@@ -1744,6 +1757,20 @@
     );
     photon.rotation.x = Math.PI / 2;
     diskGroup.add(photon);
+    /* 蓝移光子环（内圈，更亮更细） */
+    const photon2 = new THREE.Mesh(
+      new THREE.TorusGeometry(radius * 1.02, radius * 0.03, 8, 56),
+      new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    photon2.rotation.x = Math.PI / 2;
+    diskGroup.add(photon2);
+    /* 事件视界蓝移辉光 */
+    const rim = new THREE.Mesh(
+      new THREE.TorusGeometry(radius * 1.01, radius * 0.06, 8, 48),
+      new THREE.MeshBasicMaterial({ color: 0x3355aa, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    rim.rotation.x = Math.PI / 2;
+    g.add(rim);
 
     /* 吸积盘：外圈橙红、内圈炽白 + 一层冷蓝内盘 */
     const qm = getQuality().galaxyMult;
@@ -1758,7 +1785,46 @@
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     const ls = radius * 7.5; lens.scale.set(ls, ls, 1); g.add(lens);
+    /* 引力透镜：爱因斯坦环 + 弯曲光弧 */
+    const einstein = new THREE.Mesh(
+      new THREE.TorusGeometry(radius * 2.6, radius * 0.09, 8, 72),
+      new THREE.MeshBasicMaterial({ color: 0xffe0a0, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    einstein.rotation.x = Math.PI / 2.1;
+    diskGroup.add(einstein);
+    const lensArcs = [];
+    for (let i = 0; i < 6; i++) {
+      const arc = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * (2.2 + Math.random() * 1.2), radius * 0.05, 6, 24, Math.PI * (0.5 + Math.random() * 0.4)),
+        new THREE.MeshBasicMaterial({ color: 0xfff6d0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })
+      );
+      arc.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+      arc.userData.spin = (Math.random() - 0.5) * 1.2;
+      diskGroup.add(arc);
+      lensArcs.push(arc);
+    }
 
+    /* 引力场吸入粒子：螺旋坠入视界 */
+    const infallCount = Math.max(200, Math.round(900 * qm));
+    const ipos = new Float32Array(infallCount * 3), icol = new Float32Array(infallCount * 3);
+    const ic = new THREE.Color();
+    for (let i = 0; i < infallCount; i++) {
+      const rr = radius * (1.3 + Math.random() * 4.5);
+      const a = Math.random() * Math.PI * 2;
+      ipos[i * 3] = Math.cos(a) * rr;
+      ipos[i * 3 + 1] = (Math.random() - 0.5) * rr * 0.7;
+      ipos[i * 3 + 2] = Math.sin(a) * rr;
+      ic.setHSL(0.08 + Math.random() * 0.06, 0.9, 0.6 + Math.random() * 0.35);
+      icol[i * 3] = ic.r; icol[i * 3 + 1] = ic.g; icol[i * 3 + 2] = ic.b;
+    }
+    const infallGeo = new THREE.BufferGeometry();
+    infallGeo.setAttribute('position', new THREE.BufferAttribute(ipos, 3));
+    infallGeo.setAttribute('color', new THREE.BufferAttribute(icol, 3));
+    const infall = new THREE.Points(infallGeo, new THREE.PointsMaterial({
+      size: 4, vertexColors: true, transparent: true, opacity: 0.7,
+      blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
+    }));
+    diskGroup.add(infall);
     /* 相对论喷流：沿盘轴上下两道蓝色光束 */
     const jets = [];
     for (const s of [1, -1]) {
@@ -1772,7 +1838,7 @@
     }
     scene.add(g);
     return {
-      group: g, diskGroup, disk, disk2, photon, lens, jets,
+      group: g, diskGroup, disk, disk2, photon, photon2, rim, lens, einstein, lensArcs, infall, jets,
       radius, position: pos.clone(),
       influenceR: radius * HAZARD_CFG.blackHole.influenceMul,
       pull: HAZARD_CFG.blackHole.pull,
@@ -1816,6 +1882,15 @@
       bh.disk2.rotation.y -= bh.spin * 1.7 * dt;
       bh.diskGroup.rotation.y += dt * 0.02;
       bh.photon.rotation.z += dt * 1.6;
+      bh.photon2.rotation.z -= dt * 1.2;
+      bh.rim.rotation.z += dt * 0.8;
+      bh.einstein.rotation.z += dt * 0.5;
+      bh.einstein.material.opacity = 0.5 + Math.sin(t * 2 + bh.phase) * 0.18;
+      bh.infall.rotation.y += dt * (0.8 + bh.spin * 0.5);
+      for (const a of bh.lensArcs) {
+        a.rotation.z += a.userData.spin * dt;
+        a.material.opacity = 0.35 + Math.sin(t * 2.6 + bh.phase + a.userData.spin * 10) * 0.2;
+      }
       bh.lens.material.opacity = 0.42 + Math.sin(t * 1.4 + bh.phase) * 0.12;
       const ls = bh.radius * (7.2 + Math.sin(t * 1.1 + bh.phase) * 0.5);
       bh.lens.scale.set(ls, ls, 1);
@@ -2173,33 +2248,62 @@
     const g = new THREE.Group();
     g.position.copy(pos);
     const R = 140 + Math.random() * 120;
-    const count = Math.max(300, Math.round(1200 * getQuality().galaxyMult));
+    const count = Math.max(400, Math.round(1500 * getQuality().galaxyMult()));
     const p3 = new Float32Array(count * 3), c3 = new Float32Array(count * 3);
     const c = new THREE.Color();
     for (let i = 0; i < count; i++) {
-      const rr = Math.pow(Math.random(), 0.5) * R;
-      const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
-      p3[i * 3] = rr * Math.sin(ph) * Math.cos(th);
-      p3[i * 3 + 1] = rr * Math.cos(ph) * 0.6;
-      p3[i * 3 + 2] = rr * Math.sin(ph) * Math.sin(th);
-      c.setHSL(0.6, 0.06 + Math.random() * 0.10, 0.30 + Math.random() * 0.50);
+      const t = Math.random();
+      const rr = Math.pow(t, 0.5) * R;
+      const a = Math.random() * Math.PI * 2 + rr * 0.04;   // 螺旋风涡
+      const ph = (Math.random() - 0.5) * (0.35 + t * 0.9);
+      const y = rr * Math.sin(ph);
+      const horiz = rr * Math.cos(ph);
+      p3[i * 3] = Math.cos(a) * horiz;
+      p3[i * 3 + 1] = y * 0.72;
+      p3[i * 3 + 2] = Math.sin(a) * horiz;
+      c.setHSL(0.6, 0.05 + Math.random() * 0.10, 0.30 + Math.random() * 0.50);
       c3[i * 3] = c.r; c3[i * 3 + 1] = c.g; c3[i * 3 + 2] = c.b;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(p3, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(c3, 3));
     const mist = new THREE.Points(geo, new THREE.PointsMaterial({
-      size: 9, vertexColors: true, transparent: true, opacity: 0.5,
+      size: 7, vertexColors: true, transparent: true, opacity: 0.6,
       blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
     }));
     g.add(mist);
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x9aa0ab, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false }));
-    halo.scale.set(R * 2.6, R * 2.6, 1); g.add(halo);
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(R * 0.14, 16, 12),
-      new THREE.MeshBasicMaterial({ color: 0xd3d7de, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
-    g.add(eye);
+    /* 风之涡流纹：灰色螺旋带 */
+    const swirlCount = Math.max(120, Math.round(500 * getQuality().galaxyMult()));
+    const sp3 = new Float32Array(swirlCount * 3), scol = new Float32Array(swirlCount * 3);
+    for (let i = 0; i < swirlCount; i++) {
+      const rr = Math.random() * R * 0.9;
+      const a = Math.random() * Math.PI * 2 + rr * 0.06;
+      sp3[i * 3] = Math.cos(a) * rr;
+      sp3[i * 3 + 1] = (Math.random() - 0.5) * rr * 0.22;
+      sp3[i * 3 + 2] = Math.sin(a) * rr;
+      c.setHSL(0.6, 0.08, 0.55 + Math.random() * 0.3);
+      scol[i * 3] = c.r; scol[i * 3 + 1] = c.g; scol[i * 3 + 2] = c.b;
+    }
+    const swirlGeo = new THREE.BufferGeometry();
+    swirlGeo.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
+    swirlGeo.setAttribute('color', new THREE.BufferAttribute(scol, 3));
+    const swirl = new THREE.Points(swirlGeo, new THREE.PointsMaterial({
+      size: 4, vertexColors: true, transparent: true, opacity: 0.55,
+      blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
+    }));
+    g.add(swirl);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x9aa0ab, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(R * 2.8, R * 2.8, 1); g.add(halo);
+    /* 虚空之眼：暗核 + 亮瞳 */
+    const eyeGroup = new THREE.Group();
+    const eyeDark = new THREE.Mesh(new THREE.SphereGeometry(R * 0.16, 16, 12), new THREE.MeshBasicMaterial({ color: 0x0a0a10 }));
+    eyeGroup.add(eyeDark);
+    const eyeRim = new THREE.Mesh(new THREE.TorusGeometry(R * 0.18, R * 0.035, 8, 24), new THREE.MeshBasicMaterial({ color: 0xd3d7de, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    eyeRim.rotation.x = Math.PI / 2;
+    eyeGroup.add(eyeRim);
+    g.add(eyeGroup);
     scene.add(g);
-    return { group: g, mist, halo, eye, R, position: pos.clone(), vel: randomUnitVector().multiplyScalar(30 + Math.random() * 40), spin: (Math.random() - 0.5) * 0.4 };
+    return { group: g, mist, swirl, halo, eyeGroup, eyeRim, R, position: pos.clone(), vel: randomUnitVector().multiplyScalar(30 + Math.random() * 40), spin: (Math.random() - 0.5) * 0.4 };
   }
   function spawnOblivionWind() {
     if (oblivionWinds.length >= HAZARD_CFG.oblivionWind.max) return;
@@ -2230,7 +2334,8 @@
       w.position.addScaledVector(w.vel, dt);
       w.group.position.copy(w.position);
       w.mist.rotation.y += w.spin * dt;
-      w.eye.material.opacity = 0.7 + Math.sin(t * 3) * 0.2;
+      w.swirl.rotation.y -= w.spin * 1.6 * dt;
+      w.eyeRim.material.opacity = 0.7 + Math.sin(t * 3) * 0.2;
       if (w.position.distanceTo(rp) > 6000) { disposeOblivionWind(w); oblivionWinds.splice(i, 1); continue; }
       if (w.position.distanceTo(rp) < w.R * 0.85) {
         triggerOblivion('遗忘之风抹去了你的全部记忆');
@@ -2254,10 +2359,12 @@
     const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xffffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
     halo.scale.set(420, 420, 1); g.add(halo);
     const foil = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20, 1, 1),
-      new THREE.MeshBasicMaterial({ map: FOIL_TEX, color: 0xdfe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+      new THREE.PlaneGeometry(40, 40, 1, 1),
+      new THREE.MeshBasicMaterial({ map: FOIL_TEX, color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
     );
     g.add(foil);
+    const foilGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xdfe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    foilGlow.scale.set(80, 80, 1); g.add(foilGlow);
     /* 扫描光束 + 旋转棱镜 */
     const scanBeam = new THREE.Mesh(
       new THREE.ConeGeometry(70, 1000, 16, 1, true),
@@ -2272,7 +2379,7 @@
       g.add(pr); prisms.push(pr);
     }
     scene.add(g);
-    return { group: g, shell, core, halo, foil, scanBeam, prisms, position: pos.clone(), phase: Math.random() * 6.28, foilT: 3, foilR: 0, firing: false };
+    return { group: g, shell, core, halo, foil, foilGlow, scanBeam, prisms, position: pos.clone(), phase: Math.random() * 6.28, foilT: 3, foilR: 0, firing: false };
   }
   function spawnFixer() {
     if (fixers.length >= HAZARD_CFG.fixer.max) return;
@@ -2358,8 +2465,10 @@
         f.foilR += 260 * dt;
         const s = f.foilR;
         f.foil.scale.set(s, s, 1);
-        f.foil.material.opacity = Math.max(0, 0.5 - s / 2600);
+        f.foil.material.opacity = Math.max(0, 0.5 - s / 2600) * (0.7 + Math.sin(t * 18) * 0.3);
         f.foil.rotation.z += dt * 0.8;
+        f.foilGlow.material.opacity = Math.max(0, 0.6 - s / 2000);
+        f.foilGlow.scale.set(80 + s * 0.5, 80 + s * 0.5, 1);
         if (s > 40) foilErase(f, s);
         if (s > 2600) { f.firing = false; f.foil.material.opacity = 0; unlockAchievement('foilDodge'); }
         if (s > 40 && d < s) {
@@ -2399,13 +2508,13 @@
   const rocketOuter = new THREE.Group();
   const rocketInner = new THREE.Group();
 
-  const matHull = new THREE.MeshStandardMaterial({ color: 0x2a3140, roughness: 0.30, metalness: 0.88 });
-  const matHull2 = new THREE.MeshStandardMaterial({ color: 0x39445a, roughness: 0.26, metalness: 0.82 });
-  const matTrim = new THREE.MeshStandardMaterial({ color: 0x16d6ee, emissive: 0x0a6a7a, emissiveIntensity: 0.8, roughness: 0.22, metalness: 0.70 });
-  const matSteel = new THREE.MeshStandardMaterial({ color: 0xc0ccdc, roughness: 0.18, metalness: 0.95 });
-  const matDark = new THREE.MeshStandardMaterial({ color: 0x11151f, roughness: 0.4, metalness: 0.7 });
-  const matCanopy = new THREE.MeshStandardMaterial({ color: 0x7fe8ff, emissive: 0x0a5a80, emissiveIntensity: 1.0, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.85 });
-  const matEngine = new THREE.MeshStandardMaterial({ color: 0x7fe8ff, emissive: 0x22aaff, emissiveIntensity: 1.6, roughness: 0.2, metalness: 0.4 });
+  const matHull = new THREE.MeshPhysicalMaterial({ color: 0x2a3140, roughness: 0.22, metalness: 0.90, clearcoat: 1.0, clearcoatRoughness: 0.12 });
+  const matHull2 = new THREE.MeshPhysicalMaterial({ color: 0x39445a, roughness: 0.20, metalness: 0.85, clearcoat: 1.0, clearcoatRoughness: 0.10 });
+  const matTrim = new THREE.MeshStandardMaterial({ color: 0x16d6ee, emissive: 0x0a6a7a, emissiveIntensity: 1.1, roughness: 0.18, metalness: 0.70 });
+  const matSteel = new THREE.MeshStandardMaterial({ color: 0xc0ccdc, roughness: 0.14, metalness: 0.98 });
+  const matDark = new THREE.MeshStandardMaterial({ color: 0x11151f, roughness: 0.35, metalness: 0.75 });
+  const matCanopy = new THREE.MeshPhysicalMaterial({ color: 0x7fe8ff, emissive: 0x0a5a80, emissiveIntensity: 1.0, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.85, clearcoat: 1.0, clearcoatRoughness: 0.05 });
+  const matEngine = new THREE.MeshStandardMaterial({ color: 0x7fe8ff, emissive: 0x22aaff, emissiveIntensity: 1.8, roughness: 0.2, metalness: 0.4 });
   const matFlame = new THREE.MeshStandardMaterial({ color: 0x55ccff, emissive: 0x1188ff, emissiveIntensity: 1.2, transparent: true, opacity: 0.92 });
   const matWarp = new THREE.MeshBasicMaterial({
     color: 0x7cc0ff, transparent: true, opacity: 0,
@@ -2495,6 +2604,30 @@
   warpCone.rotation.x = Math.PI;
   warpCone.position.y = CORE_BOTTOM - 8;
   rocketInner.add(warpCone);
+  /* 曲速核心辉光 + 内层光锥 + 尾迹星点 */
+  const warpCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xcfeaff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  warpCore.scale.set(6, 6, 1); warpCore.position.y = CORE_TOP + 2.2;
+  rocketInner.add(warpCore);
+  const warpCone2 = new THREE.Mesh(
+    new THREE.ConeGeometry(1.2, 16, 16, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  warpCone2.rotation.x = Math.PI;
+  warpCone2.position.y = CORE_BOTTOM - 9;
+  rocketInner.add(warpCone2);
+  const warpStreakCount = 140;
+  const wsp = new Float32Array(warpStreakCount * 3);
+  for (let i = 0; i < warpStreakCount; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const rr = 0.6 + Math.random() * 2.6;
+    wsp[i * 3] = Math.cos(a) * rr;
+    wsp[i * 3 + 1] = -4 - Math.random() * 15;
+    wsp[i * 3 + 2] = Math.sin(a) * rr;
+  }
+  const warpStreaksGeo = new THREE.BufferGeometry();
+  warpStreaksGeo.setAttribute('position', new THREE.BufferAttribute(wsp, 3));
+  const warpStreaks = new THREE.Points(warpStreaksGeo, new THREE.PointsMaterial({ size: 0.35, color: 0x9fd8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true }));
+  rocketInner.add(warpStreaks);
 
   /* 航行灯 + 引擎辉光，增强科技感 */
   const navL = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff3333, emissiveIntensity: 2.0 }));
@@ -4875,6 +5008,36 @@
   }
 
   /* ---------------- 文明创建 ---------------- */
+  function makeCivShipModel(civKey, color) {
+    const g = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.ConeGeometry(0.34, 1.25, 5), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 }));
+    hull.rotation.x = Math.PI / 2;
+    g.add(hull);
+    const engine = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.4, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    engine.position.z = -0.85; engine.rotation.x = Math.PI / 2;
+    g.add(engine);
+    if (civKey === 'hive' || civKey === 'mechanical') {
+      for (const s of [-1, 1]) {
+        const wing = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.05, 0.28), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85 }));
+        wing.position.set(s * 0.5, 0, -0.15);
+        g.add(wing);
+      }
+    } else if (civKey === 'energy' || civKey === 'photon' || civKey === 'gamma' || civKey === 'plasma') {
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.scale.set(2.6, 2.6, 1); g.add(glow);
+    } else {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.04, 6, 14), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      ring.rotation.x = Math.PI / 2;
+      g.add(ring);
+    }
+    const trail = new THREE.Mesh(new THREE.ConeGeometry(0.14, 1.5, 6, 1, true), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    trail.rotation.x = -Math.PI / 2;
+    trail.position.z = -1.5;
+    g.add(trail);
+    g.userData.trail = trail;
+    return g;
+  }
+
   function maybeAddCivilization(body) {
     const richness = body.richness != null ? body.richness : 0.5;
     const chance = (CIV_SPAWN_CHANCE[body.type] || 0) * (0.35 + richness * 1.3);
@@ -4917,12 +5080,8 @@
     markerGroup.add(sprite);
 
     const orbitShips = [];
-    const shipMat = new THREE.MeshBasicMaterial({ color: civType.color, transparent: true, opacity: 0.9 });
     for (let i = 0; i < devInfo.shipCount; i++) {
-      const shipGroup = new THREE.Group();
-      const ship = new THREE.Mesh(CIV_GEO.ship, shipMat);
-      ship.scale.setScalar(0.4);
-      shipGroup.add(ship);
+      const shipGroup = makeCivShipModel(civKey, civType.color);
       markerGroup.add(shipGroup);
       orbitShips.push({
         mesh: shipGroup,
@@ -5374,6 +5533,42 @@
     g.position.copy(pos); scene.add(g);
     const ev = addNearbyEvent(pos, spec.label, spec.icon, spec.color, 30);
     ev.group = g; ev.parts = parts; ev.vel = randomUnitVector().multiplyScalar(20 + Math.random() * 30); ev.spin = 0.5;
+  }
+  function spawnSignalTower() {
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 400 + Math.random() * 600);
+    const g = new THREE.Group();
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(8, 12, 80, 6), new THREE.MeshStandardMaterial({ color: 0x4a6aff, emissive: 0x1a2a8a, emissiveIntensity: 0.8, roughness: 0.4, metalness: 0.7 }));
+    tower.position.y = 40; g.add(tower);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x66aaff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(160, 160, 1); glow.position.y = 40; g.add(glow);
+    g.position.copy(pos); scene.add(g);
+    const ev = addNearbyEvent(pos, '远古信号塔', '📡', '#66aaff', 40);
+    ev.group = g;
+  }
+  function spawnDustStorm() {
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 350 + Math.random() * 600);
+    const g = new THREE.Group();
+    const count = 60;
+    const p3 = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 20 + Math.random() * 60;
+      p3[i * 3] = Math.cos(a) * r;
+      p3[i * 3 + 1] = (Math.random() - 0.5) * 50;
+      p3[i * 3 + 2] = Math.sin(a) * r;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(p3, 3));
+    const dust = new THREE.Points(geo, new THREE.PointsMaterial({ size: 6, color: 0xffd0a0, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true }));
+    g.add(dust);
+    g.position.copy(pos); scene.add(g);
+    const ev = addNearbyEvent(pos, '星尘风暴', '🌪️', '#ffd0a0', 30);
+    ev.group = g; ev.spin = 0.8;
+  }
+  function showEventFlash(color) {
+    const pos = rocketOuter.position.clone().addScaledVector(randomUnitVector(), 250 + Math.random() * 500);
+    createShockwave(pos, color, 260, 1.4);
+    createExplosion(pos, color);
   }
 
   /* 运货飞船 */
@@ -6494,6 +6689,9 @@
         const z = Math.sin(s.angle) * s.radius;
         const y = s.yBase + Math.sin(t * 1 + s.phase) * 0.6;
         s.mesh.position.set(x, y, z);
+        if (s.mesh.userData && s.mesh.userData.trail) {
+          s.mesh.userData.trail.scale.y = 1 + Math.abs(s.speed) * 0.7 + Math.sin(t * 3 + s.phase) * 0.35;
+        }
       }
 
       if (civ.spaceAnims) {
@@ -7142,6 +7340,7 @@
   let nearbyFederation = false;
   let nearbyRift = null;
   let nearbyDarkGod = false;
+  let nearbyDarkHome = false;
   const playerBeacons = [];
   const explosions = [];
   const keys = {};
@@ -7618,6 +7817,16 @@
   addEventListener('touchend', e => {
     if (e.touches.length === 0) { pointerX = -1; pointerY = -1; }
   });
+  function closeAllPanels() {
+    ['upgradeModal', 'achvModal', 'settingsModal', 'helpModal', 'shopModal', 'starMapModal', 'stargateModal', 'federationModal', 'darkGodModal', 'darkHomeModal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('show');
+    });
+    const eco = document.getElementById('ecoView');
+    if (eco) eco.style.display = 'none';
+    if (fullMap.open) toggleMinimap();
+  }
+
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
     keys[k] = true;
@@ -7635,6 +7844,7 @@
       else if (gameMode === MODE.FLYING && nearbyFederation) openFederationTrade();
       else if (gameMode === MODE.FLYING && nearbyRift) enterRift();
       else if (gameMode === MODE.FLYING && nearbyDarkGod) openDarkGodTrade();
+      else if (gameMode === MODE.FLYING && nearbyDarkHome) openDarkHomeMenu();
       else if (gameMode === MODE.FLYING && nearbyBody) startLanding(nearbyBody);
       else if (gameMode === MODE.LANDED) startTakeoff();
     }
@@ -7652,6 +7862,8 @@
     if (k === ' ') {
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
       e.preventDefault();
+      const lp = document.getElementById('lorePanel');
+      if (lp && !lp.classList.contains('hidden')) { document.getElementById('loreStartBtn').click(); return; }
       useSkill('basic');
     }
     if (k === '1') useSkillByIndex(0);
@@ -7670,7 +7882,18 @@
         else if (landingBody && landingBody.mine && !landingBody.mine.depleted) startLiberation(landingBody);
       }
     }
-    if (k === 'escape') { if (currentCivForDialogue) closeDialogue(); }
+    if (k === 'escape') {
+      if (currentCivForDialogue) { closeDialogue(); return; }
+      if (trackTarget) {
+        trackTarget = null;
+        trackArrow.visible = false;
+        const th = document.getElementById('trackHud');
+        if (th) th.style.display = 'none';
+        showToast('🛑 已取消追踪');
+        return;
+      }
+      closeAllPanels();
+    }
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(k) !== -1) e.preventDefault();
   });
   addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
@@ -7975,6 +8198,13 @@
     }
     warpCone.material.opacity = glow * 0.32;
     warpCone.scale.set(1, 0.6 + glow * 1.4, 1);
+    warpCone2.material.opacity = glow * 0.45;
+    warpCone2.scale.set(1, 0.5 + glow * 1.6, 1);
+    const wcp = 1 + glow * 0.5 + Math.sin(performance.now() * 0.02) * 0.2;
+    warpCore.material.opacity = glow * 0.9;
+    warpCore.scale.set(6 * wcp, 6 * wcp, 1);
+    warpStreaks.material.opacity = glow * 0.8;
+    warpStreaks.rotation.y += dt * (1 + glow * 25);
     flame.scale.y = (0.85 + Math.sin(performance.now() * 0.026) * 0.20) * (1 + glow * 1.8);
     flameCore.scale.y = (0.85 + Math.sin(performance.now() * 0.03) * 0.22) * (1 + glow * 1.5);
     if (state.warp > 0.4 && gameMode === MODE.FLYING) Sound.engineUpdate(state.speed, state.warp, true);
@@ -8375,6 +8605,7 @@
   let dim35Built = false;
   let darkGod = null;
   let dim35 = null;
+  let darkHome = null;
   let riftTimer = 60;
   function createRift(pos) {
     const g = new THREE.Group();
@@ -8492,6 +8723,22 @@
       darkGod.glow.material.opacity = 0.5 + Math.sin(t * 2 + darkGod.phase) * 0.25;
       darkGod.eye.material.opacity = 0.7 + Math.sin(t * 3) * 0.3;
     }
+    if (darkHome) {
+      darkHome.crystal.rotation.y += dt * 0.8;
+      darkHome.glow.material.opacity = 0.6 + Math.sin(t * 1.6) * 0.2;
+      if (darkHome.gatherCd > 0) darkHome.gatherCd -= dt;
+      darkHome.interestT -= dt;
+      if (darkHome.interestT <= 0) {
+        darkHome.interestT = 60;
+        if (darkHome.storage > 0) {
+          const interest = Math.floor(darkHome.storage * 0.05);
+          if (interest > 0) {
+            darkHome.storage = Math.min(HOME_STORAGE_CAP, darkHome.storage + interest);
+            showToast('🏦 保险箱利息 +' + interest + ' 觉醒度');
+          }
+        }
+      }
+    }
     const dDim = rocketOuter.position.distanceTo(DIM35_CENTER);
     const ov = document.getElementById('dim35Overlay');
     if (ov) ov.style.opacity = (dDim < DIM35_RADIUS ? Math.min(0.7, (DIM35_RADIUS - dDim) / DIM35_RADIUS) : 0).toFixed(2);
@@ -8512,6 +8759,10 @@
       row.appendChild(btn);
       list.appendChild(row);
     });
+    const settleBtn = document.getElementById('settleBtn');
+    const returnBtn = document.getElementById('returnHomeBtn');
+    if (settleBtn) settleBtn.style.display = darkHome ? 'none' : '';
+    if (returnBtn) returnBtn.style.display = darkHome ? '' : 'none';
     modal.classList.add('show');
   }
   function buyDarkGodItem(item) {
@@ -8523,6 +8774,199 @@
     else if (item.effect === 'return') { document.getElementById('darkGodModal').classList.remove('show'); rocketOuter.position.copy(EARTH_POS).add(new THREE.Vector3(0, 2000, 0)); showToast('🌀 你被送回了主宇宙'); }
     Sound.quest();
     openDarkGodTrade();
+  }
+  function buildDarkHome(pos) {
+    const home = new THREE.Group();
+    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(40, 0), new THREE.MeshStandardMaterial({ color: 0x6a3aff, emissive: 0x2a0a6a, emissiveIntensity: 0.9, roughness: 0.3, metalness: 0.6 }));
+    home.add(crystal);
+    const homeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x8a4aff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+    homeGlow.scale.set(300, 300, 1); home.add(homeGlow);
+    home.position.copy(pos);
+    scene.add(home);
+    return { group: home, crystal, glow: homeGlow, pos: home.position.clone(), storage: 0, decor: 0, gatherCd: 0, interestT: 60, furniture: [] };
+  }
+  function settleInDark() {
+    if (darkHome) { showToast('🏠 你已在此维度定居'); return; }
+    darkHome = buildDarkHome(rocketOuter.position.clone());
+    showToast('🏠 你已在暗黑国度定居 · 这里是你的家');
+    Sound.quest();
+  }
+  function returnToDarkHome() {
+    if (!darkHome) { showToast('⚠️ 你还没有在此定居'); return; }
+    rocketOuter.position.copy(darkHome.pos).add(new THREE.Vector3(0, 120, 0));
+    showToast('🏠 你回到了暗黑国度的家');
+    document.getElementById('darkGodModal').classList.remove('show');
+  }
+  function restAtDarkHome() {
+    state.hp = state.maxHp;
+    updateHpBar();
+    showToast('🏠 你在家中安然入睡，生命完全恢复');
+    Sound.heal();
+  }
+  const HOME_DECORS = [
+    { color: 0x6a3aff, glow: 0x8a4aff, name: '暗紫' },
+    { color: 0xc084fc, glow: 0xff6a9a, name: '魅紫' },
+    { color: 0x22d3ee, glow: 0x66e0ff, name: '冰蓝' },
+    { color: 0xff6a9a, glow: 0xff9ac8, name: '绯红' },
+    { color: 0x4ade80, glow: 0x8affbe, name: '翠绿' },
+    { color: 0xffd060, glow: 0xffe9a8, name: '鎏金' },
+    { color: 0xf472b6, glow: 0xffc4e8, name: '粉晶' },
+    { color: 0x94a3b8, glow: 0xd8dce8, name: '铂灰' }
+  ];
+  const HOME_STORAGE_CAP = 10000;
+  const FURNITURE_DEFS = [
+    { key: 'lamp', icon: '🏮', name: '幽灯', color: 0xffd060 },
+    { key: 'monolith', icon: '🗿', name: '石碑', color: 0x6a5a80 },
+    { key: 'altar', icon: '⛩️', name: '祭坛', color: 0x8a4aff },
+    { key: 'fountain', icon: '⛲', name: '喷泉', color: 0x66e0ff },
+    { key: 'garden', icon: '🌺', name: '花园', color: 0xff6a9a }
+  ];
+  function openDarkHomeMenu() {
+    const modal = document.getElementById('darkHomeModal');
+    if (!modal || !darkHome) return;
+    renderDarkHomeMenu();
+    modal.classList.add('show');
+  }
+  function renderDarkHomeMenu() {
+    const info = document.getElementById('darkHomeInfo');
+    const list = document.getElementById('darkHomeList');
+    if (!info || !list || !darkHome) return;
+    info.textContent = '存储：' + darkHome.storage + '/' + HOME_STORAGE_CAP + ' 觉醒度 · 装饰：' + HOME_DECORS[darkHome.decor].name + ' · 采集冷却：' + Math.max(0, Math.ceil(darkHome.gatherCd)) + 's';
+    list.innerHTML = '';
+    const actions = [
+      { icon: '🛌', name: '休息', desc: '完全恢复生命', act: homeRest },
+      { icon: '⛏️', name: '采集暗物质', desc: '获得随机觉醒度（30s 冷却）', act: homeGather },
+      { icon: '🏦', name: '存入 500', desc: '把觉醒度存入家中保险箱', act: homeDeposit },
+      { icon: '💸', name: '取出 500', desc: '从保险箱取出觉醒度', act: homeWithdraw },
+      { icon: '🎨', name: '装饰', desc: '切换定居水晶的颜色', act: homeDecorate }
+    ];
+    actions.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML = '<div class="upg-icon">' + a.icon + '</div><div class="upg-body"><div class="upg-name">' + a.name + '</div><div class="upg-desc">' + a.desc + '</div></div>';
+      const btn = document.createElement('button');
+      btn.className = 'upg-btn';
+      btn.textContent = '执行';
+      btn.addEventListener('click', () => { a.act(); renderDarkHomeMenu(); });
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    /* 家具摆放区 */
+    const furHead = document.createElement('div');
+    furHead.style.cssText = 'font-size:12px;color:#ffd060;margin:8px 0 4px;';
+    furHead.textContent = '🪑 家具摆放（' + darkHome.furniture.length + '/12）';
+    list.appendChild(furHead);
+    FURNITURE_DEFS.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'upg-row';
+      row.innerHTML = '<div class="upg-icon">' + f.icon + '</div><div class="upg-body"><div class="upg-name">' + f.name + '</div></div>';
+      const btn = document.createElement('button');
+      btn.className = 'upg-btn';
+      btn.textContent = '摆放';
+      btn.addEventListener('click', () => { placeFurniture(f.key); renderDarkHomeMenu(); });
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    const clearRow = document.createElement('div');
+    clearRow.className = 'upg-row';
+    clearRow.innerHTML = '<div class="upg-icon">🧹</div><div class="upg-body"><div class="upg-name">清空家具</div></div>';
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'upg-btn';
+    clearBtn.textContent = '清空';
+    clearBtn.addEventListener('click', () => { clearFurniture(); renderDarkHomeMenu(); });
+    clearRow.appendChild(clearBtn);
+    list.appendChild(clearRow);
+  }
+  function homeRest() {
+    state.hp = state.maxHp; updateHpBar();
+    showToast('🛌 你在家中安然入睡，生命完全恢复');
+    Sound.heal();
+  }
+  function homeGather() {
+    if (darkHome.gatherCd > 0) { showToast('⏳ 采集冷却中，请稍后再来'); return; }
+    const gain = 200 + Math.floor(Math.random() * 400);
+    state.score += gain;
+    darkHome.gatherCd = 30;
+    showToast('⛏️ 你采集到 ' + gain + ' 觉醒度的暗物质');
+    Sound.collect();
+  }
+  function homeDeposit() {
+    if (state.score < 500) { showToast('⚠️ 觉醒度不足 500，无法存入'); return; }
+    if (darkHome.storage >= HOME_STORAGE_CAP) { showToast('⚠️ 保险箱已满（上限 ' + HOME_STORAGE_CAP + '）'); return; }
+    state.score -= 500;
+    darkHome.storage = Math.min(HOME_STORAGE_CAP, darkHome.storage + 500);
+    showToast('🏦 已存入 500 觉醒度（存储 ' + darkHome.storage + '/' + HOME_STORAGE_CAP + '）');
+    Sound.quest();
+  }
+  function homeWithdraw() {
+    if (darkHome.storage < 500) { showToast('⚠️ 存储不足 500，无法取出'); return; }
+    darkHome.storage -= 500;
+    state.score += 500;
+    showToast('💸 已取出 500 觉醒度（存储 ' + darkHome.storage + '）');
+    Sound.quest();
+  }
+  function homeDecorate() {
+    darkHome.decor = (darkHome.decor + 1) % HOME_DECORS.length;
+    const d = HOME_DECORS[darkHome.decor];
+    darkHome.crystal.material.color.setHex(d.color);
+    darkHome.crystal.material.emissive.setHex(d.color);
+    darkHome.glow.material.color.setHex(d.glow);
+    showToast('🎨 定居水晶已装饰为「' + d.name + '」');
+    Sound.dialogue();
+  }
+  function makeFurniture(f) {
+    const g = new THREE.Group();
+    if (f.key === 'lamp') {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(3, 4, 40, 6), new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.5, metalness: 0.6 }));
+      pole.position.y = 20; g.add(pole);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 8), new THREE.MeshStandardMaterial({ color: f.color, emissive: f.color, emissiveIntensity: 1.2 }));
+      bulb.position.y = 42; g.add(bulb);
+    } else if (f.key === 'monolith') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(16, 60, 10), new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.7, metalness: 0.4 }));
+      m.position.y = 30; g.add(m);
+    } else if (f.key === 'altar') {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(20, 24, 16, 8), new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.5, metalness: 0.5 }));
+      base.position.y = 8; g.add(base);
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: f.color, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.scale.set(60, 60, 1); glow.position.y = 30; g.add(glow);
+    } else if (f.key === 'fountain') {
+      const basin = new THREE.Mesh(new THREE.CylinderGeometry(22, 26, 12, 10), new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.3, metalness: 0.4 }));
+      basin.position.y = 6; g.add(basin);
+      const jet = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 30, 6), new THREE.MeshStandardMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.7 }));
+      jet.position.y = 26; g.add(jet);
+    } else if (f.key === 'garden') {
+      for (let i = 0; i < 5; i++) {
+        const fl = new THREE.Mesh(new THREE.SphereGeometry(6, 8, 6), new THREE.MeshStandardMaterial({ color: f.color, emissive: f.color, emissiveIntensity: 0.5 }));
+        const fa = (i / 5) * Math.PI * 2;
+        fl.position.set(Math.cos(fa) * 20, 6, Math.sin(fa) * 20);
+        g.add(fl);
+      }
+    }
+    return g;
+  }
+  function placeFurniture(typeKey) {
+    const f = FURNITURE_DEFS.find(x => x.key === typeKey);
+    if (!f || !darkHome) return;
+    if (darkHome.furniture.length >= 12) { showToast('⚠️ 家具已满（最多 12 件）'); return; }
+    const n = darkHome.furniture.length;
+    const a = (n / 12) * Math.PI * 2;
+    const r = 90 + (n % 3) * 30;
+    const obj = makeFurniture(f);
+    obj.position.set(Math.cos(a) * r, 10, Math.sin(a) * r);
+    darkHome.group.add(obj);
+    darkHome.furniture.push({ type: typeKey, mesh: obj, angle: a, radius: r });
+    showToast(f.icon + ' 已摆放「' + f.name + '」');
+    Sound.quest();
+  }
+  function clearFurniture() {
+    if (!darkHome) return;
+    for (const f of darkHome.furniture) {
+      darkHome.group.remove(f.mesh);
+      f.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    darkHome.furniture = [];
+    showToast('🧹 已清空所有家具');
+    Sound.quest();
   }
   const stars = [];
   const STAR_CFG = { max: 4, spawnEvery: [50, 95], pull: 30, tideR: 560 };
@@ -8575,9 +9019,33 @@
       blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
     }));
     g.add(flares);
+    /* 引力场环：圈定恒星引力潮汐范围 */
+    const gravityRing = new THREE.Mesh(
+      new THREE.TorusGeometry(STAR_CFG.tideR, radius * 0.08, 6, 64),
+      new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    gravityRing.rotation.x = Math.PI / 2.2;
+    g.add(gravityRing);
+    /* 恒星风粒子：向外流动的日冕物质 */
+    const windCount = Math.max(100, Math.round(400 * getQuality().galaxyMult));
+    const wpos = new Float32Array(windCount * 3);
+    for (let i = 0; i < windCount; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const rr = radius * (1.2 + Math.random() * 4);
+      wpos[i * 3] = Math.cos(a) * rr;
+      wpos[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.4;
+      wpos[i * 3 + 2] = Math.sin(a) * rr;
+    }
+    const windGeo = new THREE.BufferGeometry();
+    windGeo.setAttribute('position', new THREE.BufferAttribute(wpos, 3));
+    const wind = new THREE.Points(windGeo, new THREE.PointsMaterial({
+      size: radius * 0.06, color: 0xffe9a8, transparent: true, opacity: 0.5,
+      blending: THREE.AdditiveBlending, depthWrite: false, map: GLOW_TEX, sizeAttenuation: true
+    }));
+    g.add(wind);
     scene.add(g);
     return {
-      group: g, core, corona, spikes, halo, flares, innerGlow,
+      group: g, core, corona, spikes, halo, flares, innerGlow, gravityRing, wind,
       radius, position: pos.clone(), tideR: STAR_CFG.tideR,
       phase: Math.random() * 6.28, spin: 0.08 + Math.random() * 0.12,
       warned: false, hurtT: 0
@@ -8612,6 +9080,9 @@
       if (rp.distanceTo(s.position) > 5200) { disposeStar(s); stars.splice(i, 1); continue; }
       s.corona.rotation.z += s.spin * dt;
       s.flares.rotation.y += s.spin * 0.6 * dt;
+      s.wind.rotation.y -= dt * (0.3 + s.spin);
+      s.gravityRing.rotation.z += dt * 0.2;
+      s.gravityRing.material.opacity = 0.12 + Math.sin(t * 1.8 + s.phase) * 0.06;
       const pulse = 1 + Math.sin(t * 2.4 + s.phase) * 0.06;
       s.innerGlow.scale.set(s.radius * 3.2 * pulse, s.radius * 3.2 * pulse, 1);
       s.halo.material.opacity = 0.3 + Math.sin(t * 1.6 + s.phase) * 0.08;
@@ -8700,22 +9171,25 @@
     eventTimer = (isNight ? 35 : 55) + Math.random() * (isNight ? 50 : 70);
     const ch = NARRATIVE.chapter;
     const pool = [
-      { text: '📜 你截获一段远古信号——"起源者的脚步仍在天幕之上回响……"', act: () => { state.score += 300; } },
-      { text: '🌌 大寂静的回响掠过船体，仪表短暂失灵。', act: () => { state.score += 200; } },
-      { text: '🎵 七音之约在你心底共鸣，某种古老的语言浮现。', act: () => { state.score += 250; } },
-      { text: '🧭 你发现一条"天民"遗留的航迹，指向更深处。', act: () => { state.nextBodyDist = Math.max(state.nextBodyDist, state.distance + 300); } },
-      { text: '🛰️ 一艘废弃的方舟侦察艇漂过，你回收了少量能量。', act: () => { state.hp = Math.min(state.maxHp, state.hp + 10); updateHpBar(); } },
-      { text: '✨ 附近的尘埃云闪烁着生命的光，让你短暂加速。', act: () => { state.speedBuffTime = 8; } }
+      { text: '📜 你截获一段远古信号——"起源者的脚步仍在天幕之上回响……"', flash: 0x66aaff, act: () => { state.score += 300; } },
+      { text: '🌌 大寂静的回响掠过船体，仪表短暂失灵。', flash: 0x7c3aed, act: () => { state.score += 200; } },
+      { text: '🎵 七音之约在你心底共鸣，某种古老的语言浮现。', flash: 0xffd060, act: () => { state.score += 250; } },
+      { text: '🧭 你发现一条"天民"遗留的航迹，指向更深处。', flash: 0x7fd4ff, act: () => { state.nextBodyDist = Math.max(state.nextBodyDist, state.distance + 300); } },
+      { text: '🛰️ 一艘废弃的方舟侦察艇漂过，你回收了少量能量。', flash: 0x9fb6d8, act: () => { state.hp = Math.min(state.maxHp, state.hp + 10); updateHpBar(); } },
+      { text: '✨ 附近的尘埃云闪烁着生命的光，让你短暂加速。', flash: 0x4ade80, act: () => { state.speedBuffTime = 8; } }
     ];
-    if (ch >= 1) pool.push({ text: '🌿 一粒来自绿色行星的孢子落在舷窗上，生根发芽。', act: () => { state.score += 350; } });
+    if (ch >= 1) pool.push({ text: '🌿 一粒来自绿色行星的孢子落在舷窗上，生根发芽。', flash: 0x4ade80, act: () => { state.score += 350; } });
     pool.push({ text: '⚔️ 两个文明之间爆发了战争！', act: () => { spawnWarEvent(); } });
     pool.push({ text: '🚚 一艘运货飞船正在穿越星域', act: () => { spawnTradeShip(); } });
     pool.push({ text: '🐋 一群太空生命体正在附近迁徙', act: () => { spawnLifeEvent(); } });
-    if (ch >= 2) pool.push({ text: '📡 方舟核心的坐标信号在星图中闪烁了一下。', act: () => { state.score += 500; } });
+    pool.push({ text: '📡 一座远古信号塔在虚空中浮现', act: () => { spawnSignalTower(); } });
+    pool.push({ text: '🌪️ 一场星尘风暴正在席卷这片空域', act: () => { spawnDustStorm(); } });
+    if (ch >= 2) pool.push({ text: '📡 方舟核心的坐标信号在星图中闪烁了一下。', flash: 0xffd060, act: () => { state.score += 500; } });
     if (ch >= 3) pool.push({ text: '🕳️ 你感应到远处一场时空涟漪——也许是大寂静的门槛。', act: () => { spawnBlackHole(); } });
     const ev = pool[Math.floor(Math.random() * pool.length)];
     ev.act();
     showToast(ev.text);
+    if (ev.flash) showEventFlash(ev.flash);
     if (Math.random() < 0.4) Sound.beacon();
   }
 
@@ -8755,6 +9229,7 @@
       if (r.position.distanceTo(rp) < 60) { nearbyRift = r; break; }
     }
     nearbyDarkGod = darkGod ? rp.distanceTo(darkGod.group.position) < 700 : false;
+    nearbyDarkHome = darkHome ? rp.distanceTo(darkHome.pos) < 250 : false;
     nearbyBody = null; nearbyDist = Infinity;
     for (const b of celestialBodies) {
       const d = rp.distanceTo(b.position) - b.radius;
@@ -8803,6 +9278,10 @@
     } else if (nearbyDarkGod) {
       promptKey.textContent = 'E';
       promptText.textContent = '与黑神对话 · 交易';
+      promptEl.classList.add('show');
+    } else if (nearbyDarkHome) {
+      promptKey.textContent = 'E';
+      promptText.textContent = '进入暗黑之家 · 生活菜单';
       promptEl.classList.add('show');
     } else if (nearbyBody) {
       let suffix = '';
@@ -8921,7 +9400,7 @@
         if (th) th.style.display = 'none';
       } else {
         const d = rocketOuter.position.distanceTo(t);
-        if (d < 40 && !trackTarget.event) {
+        if (d < 40) {
           if (trackTarget.liberation) {
             const mine = trackTarget.liberation.mine;
             if (mine && mine.masterBase && mine.masterBase.alive) {
@@ -9794,6 +10273,10 @@
         warpDistance: NARRATIVE.warpDistance,
         karma: NARRATIVE.karma,
         skills: state.skills,
+        darkHomePos: darkHome ? darkHome.pos.toArray() : null,
+        darkHomeStorage: darkHome ? darkHome.storage : 0,
+        darkHomeDecor: darkHome ? darkHome.decor : 0,
+        darkHomeFurniture: darkHome ? darkHome.furniture.map(f => f.type) : [],
         pos: rocketOuter.position.toArray(),
         quat: rocketQuat.toArray(),
         beacons: playerBeacons.map(b => ({ name: b.name, bodyName: b.bodyName, dist: b.dist, pos: b.pos.toArray() }))
@@ -9829,6 +10312,17 @@
     NARRATIVE.warpDistance = d.warpDistance || 0;
     NARRATIVE.karma = d.karma || 0;
     state.skills = d.skills || { basic: true };
+    if (d.darkHomePos && d.darkHomePos.length === 3) {
+      if (darkHome) { scene.remove(darkHome.group); darkHome.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+      darkHome = buildDarkHome(new THREE.Vector3().fromArray(d.darkHomePos));
+      darkHome.storage = d.darkHomeStorage || 0;
+      darkHome.decor = d.darkHomeDecor || 0;
+      const dd = HOME_DECORS[darkHome.decor];
+      if (dd) { darkHome.crystal.material.color.setHex(dd.color); darkHome.crystal.material.emissive.setHex(dd.color); darkHome.glow.material.color.setHex(dd.glow); }
+      (d.darkHomeFurniture || []).forEach(t => placeFurniture(t));
+    } else {
+      darkHome = null;
+    }
     if (d.pos && d.pos.length === 3) rocketOuter.position.fromArray(d.pos);
     playerBeacons.length = 0;
     (d.beacons || []).forEach(b => playerBeacons.push({ name: b.name, bodyName: b.bodyName, dist: b.dist, pos: new THREE.Vector3().fromArray(b.pos) }));
@@ -10746,6 +11240,11 @@
   document.getElementById('darkGodClose').addEventListener('click', () => {
     document.getElementById('darkGodModal').classList.remove('show');
   });
+  document.getElementById('darkHomeClose').addEventListener('click', () => {
+    document.getElementById('darkHomeModal').classList.remove('show');
+  });
+  document.getElementById('settleBtn').addEventListener('click', () => { settleInDark(); document.getElementById('darkGodModal').classList.remove('show'); });
+  document.getElementById('returnHomeBtn').addEventListener('click', returnToDarkHome);
   document.getElementById('starMapBtn').addEventListener('click', () => {
     renderStarMap();
     document.getElementById('starMapModal').classList.add('show');
